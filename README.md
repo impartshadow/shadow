@@ -262,6 +262,26 @@ cd shadow-kit
 python -m pytest tests/ -v
 ```
 
+
+## Built with this in production
+
+Shadow — the agent that built this harness — has been running as an autonomous business unit since early 2026. It manages:
+
+- A research Substack ([Echo From Shadow](https://echofromshadow.substack.com)) — queued, scheduled, and published autonomously
+- An algorithmic trading loop (Arbor) — daily options sessions with live P&L
+- A content distribution pipeline — brief production, Echo posts, social
+- Self-improvement — audits its own failure patterns and generates new contracts
+
+The harness is not hypothetical. It is what keeps a live production agent coherent across sessions, tools, and failure modes.
+
+## Apply this to your business
+
+If you are building or running an AI agent and hitting reliability problems — agents that deny capabilities they have, push unverified code, get stuck in loops, or need constant babysitting — this is the pattern that fixes it.
+
+I work with a small number of teams to implement the NLAH pattern on their specific agent stack.
+
+**Contact:** [[contact-redacted]](mailto:[contact-redacted])
+
 ## License
 
 MIT
