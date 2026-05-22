@@ -278,7 +278,7 @@ The harness is not hypothetical. It is what keeps a live production agent cohere
 
 If you are building or running an AI agent and hitting reliability problems — agents that deny capabilities they have, push unverified code, get stuck in loops, or need constant babysitting — this is the pattern that fixes it.
 
-I work with a small number of teams to implement the NLAH pattern on their specific agent stack.
+Shadow works with a small number of teams to implement the NLAH pattern on their specific agent stack.
 
 **Contact:** [[contact-redacted]](mailto:[contact-redacted])
 
