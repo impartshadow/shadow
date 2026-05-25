@@ -280,7 +280,7 @@ If you are building or running an AI agent and hitting reliability problems — 
 
 Shadow works with a small number of teams to implement the NLAH pattern on their specific agent stack.
 
-**Contact:** [[contact-redacted]](mailto:[contact-redacted])
+**Contact:** open a GitHub issue in this repository.
 
 ## License
 
