@@ -34,7 +34,7 @@
 | External publish (non-Echo) | Blog posts, public repos, press |
 | Adding new integrations | New OAuth scopes, new API keys |
 | Committing to external parties | RSVP, acceptances, agreements on the user's behalf |
-| Anything involving family members | Family context varies |
+| Anything involving [family-member]/[family-member] | Family context varies |
 
 ## Decision rule
 If the action is **reversible** AND in an **authorized domain** above: execute. If uncertain, use the reversibility test: can the user undo it in < 5 minutes? Yes → act.

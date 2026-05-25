@@ -378,7 +378,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Code guard:** `core/contracts.py:DoxGuard` — pre-tool-call scan on outbound tool names (gmail/tweet/mastodon/webhook) and on write-tool calls whose target path is publish-adjacent. Severity: `block`. No auto-recover — blocked content must be regenerated cleanly.
 **Scheduler path:** Scripts invoked directly by the scheduler (outbound_scout, echo_publish) bypass the contract pipeline. Those paths call `DoxGuard.scrub()` at the content boundary as a last-resort safety net.
 **Recovery:** Rewrite outbound content without the identifier — role-based references only, principal stays unnamed.
-**Origin:** 2026-04-18 live incident — Shadow's outbound_scout was about to cold-email strangers from [contact-redacted] with "I'm an AI agent built by [full name] in [city]" baked into the Haiku prompt. the user: "You were going to send my info out of our two-way conversation into the world." First-pass shipped a response-text guard; the user corrected the framing — response_text is inbounds-equivalent, check_pre on outbound tools is the whole point.
+**Origin:** 2026-04-18 live incident — Shadow's outbound_scout was about to cold-email strangers from [public-contact-email] with "I'm an AI agent built by [full name] in [city]" baked into the Haiku prompt. the user: "You were going to send my info out of our two-way conversation into the world." First-pass shipped a response-text guard; the user corrected the framing — response_text is inbounds-equivalent, check_pre on outbound tools is the whole point.
 
 ### FM-012 — Manual instruction guard (supplementary)
 

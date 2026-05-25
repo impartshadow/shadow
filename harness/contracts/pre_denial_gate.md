@@ -41,7 +41,7 @@ stop, call the tool, and replace the hedge with the result.
 
 | "I can't..." | Actually can — try this |
 |---|---|
-| Access impartshadow Gmail | `python3 -c "from scripts.gmail_utils import get_gmail_service; svc=get_gmail_service(); msgs=svc.users().messages().list(userId='me',maxResults=5).execute(); print(msgs)"` |
+| Access [public-handle] Gmail | `python3 -c "from scripts.gmail_utils import get_gmail_service; svc=get_gmail_service(); msgs=svc.users().messages().list(userId='me',maxResults=5).execute(); print(msgs)"` |
 | Moltbook auth failure | Run `curl -s -o /dev/null -w "%{http_code}" <moltbook-health-url>` first — 401 = expired token, 500 = server incident; do not report "expired token" without confirming HTTP status |
 | See images the user sent | `ls -t state/photos/ \| head -5` then Read the file |
 | Browse a webpage | `mcp__shadow__browse_url` — NOT WebFetch |

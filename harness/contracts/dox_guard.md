@@ -49,8 +49,8 @@ Matching:
 
 ## Deny-list
 `DoxGuard._DENY_LIST` in `core/contracts.py`. Currently:
-- `[private-email]`, `[contact-redacted]`
-- Bare handles `[private-handle]`, `impartshadow`
+- `[private-email]`, `[public-contact-email]`
+- Bare handles `[private-handle]`, `[public-handle]`
 - `the user` as multi-word phrase (last-name alone is common — not
   matched to avoid false positives)
 
@@ -68,7 +68,7 @@ identifier. In-place redaction in outbound content ("I'm
 [redacted-name]'s agent") reads badly; rewriting is cleaner.
 
 ## Origin
-- 2026-04-18 first incident: Shadow printed `[contact-redacted]`
+- 2026-04-18 first incident: Shadow printed `[public-contact-email]`
   in `#shadow-hq` Discord. Initially shipped a `check_post` to block
   Discord output.
 - 2026-04-18 the user corrected the framing: "I don't care if they hit
