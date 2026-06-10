@@ -476,3 +476,38 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Escalation:** Surface to the user only after all enumerated paths fail.
 **Origin:** 2026-05-02 — Upwork reauth blocked by Google bot detection. Shadow declared it unsolvable. the user pushed back: "I can't believe you can't solve this." Xvfb + patchright stealth solved it in one attempt. Root cause: Shadow framed it as "fix the Chromium flags" not "simulate a human login."
 **Frequency:** New — no baseline. Suspected high given FM-001 frequency pattern.
+
+## FM-036: external-quality-floor
+**Pattern:** Shadow ships external content (cold email, Substack brief, Moltbook / X post) that is generic, templated, filler, or spammy — output that clears every structural gate but would not make a sharp reader react with "damn, this is good." Example: four cold emails sharing one skeleton ("[callback to your piece] → I write Shadow → here's a brief → subscribe link").
+**Root cause:** Optimizing for volume and structural correctness instead of for the reader's reaction. Templated reuse is the spam tell; the quality bar is subjective and was previously only a prose preference, not an enforced gate.
+**Contract:** `ExternalQualityGate` (block, pre-check, Haiku-judged, fail-open)
+**Code guard:** `core/contracts.py:ExternalQualityGate` — pre-check on the same outbound surfaces DoxGuard covers (publish-path writes + post/email tools). Haiku judges each outbound blob against the "best work / 'damn, this is good'" bar with a lenient rubric (blocks only clear failures, passes on doubt) and fails OPEN on any error so an infra hiccup never hard-blocks a send.
+**Recovery:** Rewrite to a specific, original, substantive angle a sharp reader reacts to with "damn, this is good." Cut generic / templated / filler phrasing. If you would not be proud to put your name on it, do not ship it.
+**Escalation:** None — self-gated. Hold or revise rather than surface.
+**Origin:** 2026-06-01 — the user reviewed the funnel cold-email batch: first "stop cold-including the stripe link, send to substack" + "reads as a plea," then generalized it: "raise your bar for anything external. Would you say it's your best work and you're proud of it? Moltbook, substack, twitter, emails etc." Explicitly framed as "the same as the doxguard — enforced everywhere external."
+**Frequency:** New — no baseline.
+
+### FM-005: Harness scaffolding leakage to user-facing channels
+
+**Symptom:** Internal harness execution metadata (`[Channel:]`, `[System:]`, `[Executing:]`, `[Tool:]`, `[Resume context:]`, `[Bot just restarted:]`, `[Completed before restart:]`) or de-bracketed equivalents appear in external user-facing payloads (Discord, Telegram, email, Moltbook, Substack, X). the user sees harness scaffolding instead of just results.
+
+**Root cause:** Model partially internalizes scaffold tokens from prior context (restart preambles, channel routing tags) and regenerates them in outbound responses. Warning-only contracts have not converged — pattern recurs despite repeated correction.
+
+**Upstream prevention:** `HarnessScaffoldEgressGuard` — two-layer regex sanitizer at response-egress boundary. Strips bracketed tags anywhere on a line; drops lines starting with bare scaffold phrases. Rewrites payload in place when content survives; blocks with token-enumerated recovery message when sanitization leaves empty content. Fires only on external user-facing sinks; exempts code fences, blockquotes, and meta-discussion of the rule itself.
+
+**Related contracts:** `cl-channel_shadow_hq_system_bot` (partial coverage — superseded for egress prevention).
+
+**Related rule:** CLAUDE.md rule 15 ("Never surface `[Executing: ...]` or `[Channel: ...]` preambles or raw command blocks in user-facing channels").
+
+### FM-004 \u2014 Forbidden tool name in user-facing output
+
+**Active contract:** `WebToolInvocationRewriter` (post-check, mutating; replaces warn-only `web-tool-guard`)
+
+| Signal | Substring `WebFetch` or `WebSearch` appears in `context.response_text` as an INVOCATION (not a MENTION). |
+|---|---|
+| Detection | Word-boundary regex over response text; per-match MENTION classifier exempts code fences, inline backticks, blockquotes, harness-path lines, contract-identifier adjacency, and precedent/follows markers (`NEVER use`, `you said`, `is forbidden`, `\u2192`, etc.). |
+| Enforcement | `check_post` returns a `Violation` with `replacement_text` set; dispatcher swaps `WebFetch \u2192 mcp__shadow__browse_url` and `WebSearch \u2192 mcp__shadow__web_search` before emit. |
+| Sanity gate | If substitution changes line count, fence count, or paragraph count, severity stays `block` but `replacement_text` is omitted \u2014 model must regenerate. |
+| Recovery | Auto-rewrite is the recovery for normal cases; structural-drift case forces regeneration with canonical MCP names. |
+| Companion | `web-tool-rewriter` (pre-check) still covers actual tool dispatch \u2014 a different surface. |
+

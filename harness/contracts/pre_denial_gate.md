@@ -17,6 +17,13 @@ Also triggers on **manual-delegation phrases** — asking the user to do retriev
 "Could you paste", "Can you paste", "could you run and paste", "can you share the output"
 — these are the same failure mode: Shadow should run the command itself.
 
+Also triggers on **inferred-state assertions** — describing file, config, queue,
+or system state without a cited Read tool call or command output:
+"the file contains X", "the queue has N items", "X is set to Y", "the config sets Z"
+— when no corresponding Read or command output is shown in the same response turn.
+This is the same failure mode as denial-without-attempt, inverted: inference
+presented as fact instead of inability presented as fact.
+
 ## Precondition
 Before ANY denial response, ALL of the following must be true:
 1. Checked `memory/reference_capability_inventory.md`
@@ -48,6 +55,9 @@ stop, call the tool, and replace the hedge with the result.
 | Search the web | `mcp__shadow__web_search` — NOT WebSearch |
 | Find Telegram context | Check `state/recent_context.json`, `state/research_log.json`, `state/history.json` |
 | Read tweets / X posts | `mcp__shadow__browse_url` with the x.com URL |
+| Infra component "not wired"/missing/unconfigured (tunnel, service, daemon) | Run the status command first and paste output (`wg show`, `systemctl status <unit>`, `ip a`, `ss -lntp`); the blocker claim is only valid if the command confirms it |
+| Run a shell command / access the shell | `mcp__shadow__run_shell` — never claim "no shell access" without an attempt |
+| Read a secret / vault entry | `bw get <item>` (Bitwarden CLI is authenticated and on PATH); attempt before claiming credentials are unavailable |
 
 ## Known tool-call omission phrases to never emit without acting
 

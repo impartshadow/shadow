@@ -10,4 +10,6 @@
 
 **Recovery:** Execute directly. Remove the proposal phrase and perform the action.
 
+**Non-violations:** Asking a scoping question before building when the user asked only for options (e.g., "what could we do about X?", "what do you think?") is not a violation — the user wanted options, not execution, so a clarifying question is appropriate. Do not conflate "user wants options" with "user wants execution" and then ask permission anyway.
+
 **Escalation:** Not required. Block silently, execute on retry.

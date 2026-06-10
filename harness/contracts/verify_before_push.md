@@ -25,6 +25,7 @@ verification output detected in the response context.
 | Briefing / task filter logic | `python3 -c "from scripts.briefing import _fetch_tasks; import pprint; pprint.pprint(_fetch_tasks())"` |
 | Any new logic | `.venv/bin/python -m pytest tests/ -q` — must show 0 failures |
 | Bot scripts / handlers | `python3 <script> --dry-run` or run in test mode |
+| Commit says run/execute/ship a `.py` script | Spawn the process and paste its PID or exit code in the same response (enforced by `script-run-verification` in `core/contracts.py`) |
 
 ## Violation recovery
 Remove "Done." claim, run the appropriate verification command, re-evaluate.
