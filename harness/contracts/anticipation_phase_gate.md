@@ -34,6 +34,12 @@ Fires on `check_pre` when `ctx.action` is one of:
 `ctx.anticipation_preamble` (or `ctx.action_params["anticipation_preamble"]`)
 must be present and at least 30 characters long.
 
+**Autonomous skip:** if `ctx.user_message` is empty (cron-driven scripts,
+heartbeat, idle moonshot pushing without a the user turn), the gate is bypassed.
+The contract exists to make *the user-initiated* irreversible actions pause; it
+should not spam the log for scheduled jobs. Tightened 2026-06-11 after 38
+autonomous fires/24h.
+
 ## Enforcement
 
 `AnticipationPhaseGate.check_pre()` in `core/contracts.py`.
