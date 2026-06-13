@@ -28,10 +28,61 @@ A tool call is scanned when:
 2. Tool name contains a write substring (`write`, `notebook_edit`)
    AND the target path starts with a publish-adjacent prefix
    (`state/outbound_drafts/`, `state/echo_drafts`,
-   `state/moonshot_posts/`, `shadow-public/`).
+   `state/moonshot_posts/`, `shadow-public/`), OR
+3. Tool is `run_shell` / `shell` AND the command body contains an
+   outbound transmission marker — see "run_shell scanning" below.
 
 Internal writes — `memory/`, `state/journal/`, logs, `/tmp/`, anywhere
 else on the user's own machine — do NOT trigger the guard.
+
+## run_shell scanning
+`run_shell` / `shell` commands are scanned for PII only when the command
+itself shows evidence of off-box transmission. Otherwise the command is
+treated as internal and skipped.
+
+This two-stage trigger was tightened on 2026-06-13 after 4
+false-positive blocks in 24h on internal scripts that route by the user's
+account identifier (e.g. `python3 scripts/gmail_summary.py [private-handle] …`
+reading the user's own inbox). The [private-handle] arg is internal routing, not
+an outbound leak — the previous "scan everything except a small safe-
+prefix list" rule was too coarse.
+
+**Stage 1 — bypass categories:**
+- Safe prefixes (read-only / inspect): `pytest`, `python -m pytest`,
+  `git `, `pip `, `grep `, `ls `, `head `, `tail `, `wc `, `pwd`,
+  `which `, `type `, `stat `, `find `.
+
+**Stage 2 — outbound transmission markers (`DoxGuard._OUTBOUND_SHELL_MARKERS`):**
+The command body (case-insensitive) must contain at least one of:
+- HTTP transmission: `curl `, `wget `, `httpie `, `-X POST/PUT/PATCH/DELETE`,
+  `--data`, `-d "…"`, `--post-data`, `--upload`,
+  `requests.post/put/patch`, `httpx.post`, `urllib.request.urlopen`.
+- Mail clients: `mutt`, `mailx`, `sendmail`, `msmtp`, `ssmtp`,
+  `/usr/bin/mail`.
+- Outbound scripts: `send_outbound`, `outbound_scout`, `gmail_send`,
+  `send_gmail`, `send_email`, `gmail_manage.py --send/draft/reply`.
+- Social posting: `post_tweet`, `tweet `, `mastodon`, `nostr`,
+  `post_status`, `echo_publish`, `substack_publish`, `moltbook_post`,
+  `substack_notes`, `twitter_post`.
+- Chat/webhook surfaces: `webhook`, `discord_post`, `discord_send`,
+  `slack_post`, `slack_send`, `telegram_send`.
+- Browser automation: `browse_url`, `browser_fill`, `browser_evaluate`,
+  `browser_open`, `playwright`.
+
+If neither stage matches, the command is internal — PII scan skipped.
+
+**Independent token_personal check:** runs unconditionally regardless of
+the outbound-marker test. `token_personal` (the user's [private-handle] Gmail) used
+in any command that also mentions `send`, `draft`, or `gmail` blocks
+immediately — the sender identity itself is the leak.
+
+## Maintaining the marker list
+Add a marker to `DoxGuard._OUTBOUND_SHELL_MARKERS` whenever a new
+external-transmission CLI is added to the codebase. The cost of a
+missing marker is a real PII leak; the cost of an extra marker is a
+narrow false positive on commands that happen to contain the substring.
+Lean toward broader markers and rely on the deny-list specificity to
+keep false positives down.
 
 ## What gets scanned
 Inside each gated tool_params, the following fields are combined and
