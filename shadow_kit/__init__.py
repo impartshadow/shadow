@@ -13,17 +13,31 @@ from shadow_kit.contracts import (
     list_contracts,
     register_contract,
 )
+from shadow_kit.receipts import (
+    ReceiptVerification,
+    canonical_hash,
+    issue_contract_receipt,
+    issue_receipt,
+    receipt_hash,
+    verify_receipt,
+)
 
 __all__ = [
     "Contract",
     "ContractContext",
     "ContractGovernor",
+    "ReceiptVerification",
     "Violation",
     "attempt_auto_recovery",
+    "canonical_hash",
     "check_all_post",
     "check_all_pre",
     "get_contract",
     "get_governor",
+    "issue_contract_receipt",
+    "issue_receipt",
     "list_contracts",
+    "receipt_hash",
     "register_contract",
+    "verify_receipt",
 ]

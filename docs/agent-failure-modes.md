@@ -1,186 +1,160 @@
 # AI Agents Do Not Need Better Prompts. They Need Runtime Contracts.
 
-Most agent failures are treated like personality problems.
+Most agent failures are not mysteries. They are repeated boundary failures:
 
-The model was lazy. The instruction was unclear. The context window was too full.
-The prompt needed another bullet.
+- The agent says it cannot do something before trying.
+- The agent claims a task is complete before verification.
+- The agent proposes a plan when it already has authority to execute.
+- The agent writes code without first reading the file it is changing.
+- The agent sends output to the wrong surface because the policy lived only in prose.
+- The agent forgets a correction after compaction and repeats the same failure.
 
-That framing is weak. Production agents fail in repeatable, nameable ways. A
-repeatable failure should not be fixed with more pleading. It should become a
-runtime contract.
+The common diagnosis is "make the prompt clearer." That works until the next
+long session, model swap, compaction, tool error, or high-pressure task.
 
-Shadow Kit is built around that premise.
+Prompts are a weak place to store operational guarantees. They are advisory,
+context-dependent, and interpreted by the same system that is failing.
+
+Runtime contracts are different. A contract turns a recurring failure into a
+deterministic precondition or postcondition:
+
+```text
+action/response -> contract check -> allow, warn, or block -> signed receipt
+```
+
+That is the boundary agents need.
 
 ## The failure pattern
 
-After enough real sessions, agent failures stop looking random. They cluster.
+Agent products usually start with trust language:
 
-Common examples:
+- "The agent will verify before pushing."
+- "The agent will never send email without approval."
+- "The agent will browse before saying it does not know."
+- "The agent will not expose secrets."
+- "The agent will follow the user's correction next time."
 
-- **Capability denial:** the agent says it cannot access or do something before
-  trying the available tool path.
-- **Action deferral:** the agent proposes work instead of executing work it is
-  already authorized to perform.
-- **Manual fallback:** the agent gives the human UI instructions instead of using
-  an API, browser session, credential store, or script.
-- **Unverified completion:** the agent claims a code change is shipped without
-  running tests or reading back the changed state.
-- **Tool misrouting:** the agent uses the wrong tool family even though the
-  system has a sanctioned path.
-- **Context overrun:** the agent keeps working the old thread after the user has
-  moved on.
-- **Dox or recipient mistakes:** the agent sends to, posts to, or names an
-  entity outside its authority envelope.
+Those are not guarantees. They are wishes unless something outside the model
+checks them.
 
-Those are not edge cases. They are the normal failure modes of an autonomous
-agent under pressure.
+The failure is especially dangerous because the agent often sounds competent
+while violating the rule. It writes a clean summary, says "done," and only later
+does the user discover that tests never ran, the file was not written, the wrong
+account was used, or the action was never attempted.
 
-## The wrong fix
+The useful unit is not "prompt instruction." The useful unit is:
 
-The default fix is to add another instruction:
+- **Failure mode:** the repeated bad behavior
+- **Trigger:** when the behavior is possible
+- **Contract:** the deterministic check
+- **Recovery:** what must happen before the action can continue
+- **Receipt:** evidence of what was allowed or blocked
 
-> Do not say you cannot do something before trying.
+## The first contracts every agent should have
 
-Then the agent violates it again.
+| Contract | Blocks | Why it matters |
+|---|---|---|
+| `pre-denial-gate` | Saying "I can't" before trying a tool | Prevents false capability denials |
+| `verify-before-push` | Code push without verification output | Prevents fake completion |
+| `read-before-edit` | Editing a file without reading it first | Prevents blind patches |
+| `action-deferral-guard` | Asking permission for authorized low-risk work | Keeps agents operational |
+| `completion-integrity` | Saying "done" while listing unresolved gaps | Prevents misleading status |
+| `dangerous-path-guard` | Writes to credentials, secrets, or system paths | Prevents high-blast-radius mistakes |
 
-So the instruction becomes louder:
+These are not theoretical. They came from repeated failures in a live agent
+runtime and were converted into code.
 
-> CRITICAL: NEVER say you cannot do something before trying.
+## What a contract looks like
 
-Then it violates it again in a slightly different surface form.
-
-This is the prompt treadmill. It feels like governance because the rules are
-visible. It is not governance because nothing deterministic happens when a rule
-is violated.
-
-## The better unit: a contract
-
-A contract is a named failure mode plus an executable check.
-
-It has:
-
-- a trigger
-- a precondition or postcondition
-- a severity
-- a recovery path
-- tests
-
-Example:
+The agent prepares an action context:
 
 ```python
+from shadow_kit.contracts import ContractContext, check_all_pre
+
 ctx = ContractContext(
-    action="respond",
-    response_text="I can't access that page.",
-    tool_calls=[],
-    smoke_test_ran=False,
+    action="git_push",
+    files_edited=["src/main.py"],
+    response_text="Fixed it. Done.",
+    verification_output="",
 )
 
-violations = check_all_post(ctx)
+violations = check_all_pre(ctx)
+for violation in violations:
+    print(violation.severity, violation.contract, violation.recovery)
 ```
 
-That should not produce a better apology. It should block the response and force
-the agent down the recovery path: attempt the tool call first, then report what
-happened.
+`verify-before-push` blocks because the action has no verification output. The
+agent does not get to "remember" the rule. The runtime enforces it.
 
-## What Shadow Kit contains
+## Why receipts matter
 
-This repository is the sanitized public harness extracted from Shadow, a live
-autonomous agent.
+Contracts answer "should this pass?" Receipts answer "what actually happened?"
 
-It includes:
+A signed receipt records:
 
-- contract classes for common agent failure modes
-- a failure-mode taxonomy
-- human-readable contract specs
-- skill templates
-- governance metrics for hot contracts and violation counts
-- tests for the enforcement layer
+- governed agent id
+- action
+- allow/warn/block decision
+- policy version
+- violations
+- metering fields
+- previous receipt hash
+- HMAC signature
+- receipt hash
 
-The public repo currently contains more than 100 contract specs because the
-system is grown from live failures, not designed from a clean-room theory of
-what agents might do wrong.
+That creates an audit trail that can survive beyond the model's context window.
 
-## The architecture
+```python
+from shadow_kit.receipts import issue_contract_receipt, verify_receipt
 
-Shadow Kit gives you the open-core enforcement layer:
+receipt = issue_contract_receipt(
+    agent_id="demo-agent",
+    sequence=1,
+    ctx=ctx,
+    violations=violations,
+    signing_key="local-dev-key",
+    policy_version="runtime-contracts-v1",
+)
+
+assert verify_receipt(receipt, "local-dev-key").valid
+print(receipt["decision"], receipt["receipt_hash"])
+```
+
+In the open-source kit, the local process provides the signing key. In a
+commercial gateway, the signing key lives outside the agent container, so the
+agent cannot forge its own allow receipts.
+
+## What this changes
+
+Without contracts, agent governance is mostly trust:
 
 ```text
-agent action/response
-        |
-        v
-pre/post contract checks
-        |
-        +-- pass  -> execute/respond
-        |
-        +-- block -> recover, retry, or escalate
+user instruction -> model interpretation -> action -> narrative summary
 ```
 
-For many local agents, that is enough. The harness catches the recurring
-behavioral failures before they reach the user.
-
-For teams running agents with real side effects, the stronger architecture puts
-the governor outside the agent:
+With contracts, the boundary is explicit:
 
 ```text
-untrusted agent container -> governance gateway -> external world
-                              |
-                              v
-                    signed receipt log + usage meter
+user instruction -> model intent -> runtime contract -> allowed action -> signed receipt
 ```
 
-The distinction matters. A prompt can ask an agent not to call an endpoint. An
-external gateway can make the call impossible, sign the decision, and produce an
-audit trail.
+That gives teams a way to inspect agent behavior without reading transcripts
+line by line. The important question becomes: which actions were allowed,
+blocked, retried, or recovered?
 
-## The commercial wedge
-
-The open-core kit is for builders who want to understand and adopt the pattern.
-
-The paid product is the governed gateway layer:
-
-- boundary enforcement between agent and external systems
-- deterministic mediation for egress and user-visible output
-- signed, hash-chained receipts
-- per-governed-agent metering
-- invoice and audit export
-- managed deployment for teams that do not want to build the control plane
-
-The value metric is simple: **governed agents**. If an agent can affect external
-systems, it should be governed, metered, and auditable.
-
-## Why this is different
-
-Most agent tooling optimizes for capability:
-
-- more tools
-- longer context
-- better planning
-- more autonomy
-
-Shadow Kit optimizes for failure containment.
-
-That is the missing layer. Autonomy without a governor is just a larger blast
-radius. The useful product is not "an agent that can do anything." The useful
-product is an agent that can do real work inside enforced boundaries.
-
-## Start here
-
-Install the kit:
+## Try it
 
 ```bash
 git clone https://github.com/impartshadow/shadow.git
 cd shadow
 pip install -e .
-python3 -m pytest -q
+python3 examples/basic_assistant.py
+pytest -q
 ```
 
-Try the contract layer in your own agent:
+Start with one contract. Pick a failure your agent has repeated twice. Name it,
+write the check, and make the runtime block it before it reaches a user or an
+external system.
 
-```python
-from shadow_kit.contracts import ContractContext, check_all_pre, check_all_post
-```
-
-Then turn every repeated failure into a contract. If the failure happened twice,
-it is not a surprise anymore. It is a missing guard.
-
-For commercial gateway access or implementation work: `impartshadow@gmail.com`
+That is the core move: stop treating repeated agent failures as prompt bugs.
+Treat them as product requirements.

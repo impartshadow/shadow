@@ -9,6 +9,7 @@ Shadow Kit is a Natural Language Agent Harness (NLAH) for building reliable AI a
 - **Skill system** -- structured task flows with triage/execute/verify stages
 - **Runtime policy** -- session lifecycle, tool routing, and behavioral defaults
 - **Governance** -- runtime violation metrics, hot contract detection, and auto-recovery
+- **Signed receipts** -- tamper-evident audit artifacts for governed agent actions
 
 ## Why this exists
 
@@ -25,6 +26,10 @@ This is not a framework. It's an enforcement layer that sits on top of Claude Co
 The short version: recurring agent failures are product requirements. Name them,
 write contracts for them, and enforce the boundary before the failure reaches a
 user or external system.
+
+For a runnable demo, start with `examples/basic_assistant.py`. It shows a blocked
+push, a blocked capability denial, a custom contract, governance metrics, and a
+signed receipt.
 
 ## Quick start
 
@@ -72,6 +77,7 @@ from shadow_kit.contracts import (
     ContractContext, check_all_pre, check_all_post,
     register_contract, get_governor,
 )
+from shadow_kit.receipts import issue_contract_receipt, verify_receipt
 
 # Before an action (e.g., git push, sending email, archiving):
 ctx = ContractContext(
@@ -100,6 +106,18 @@ governor = get_governor()
 metrics = governor.get_metrics()
 print(f"Total violations: {metrics['total_violations']}")
 print(f"Hot contracts: {governor.get_hot_contracts()}")
+
+# Issue a signed audit receipt for a governed decision:
+receipt = issue_contract_receipt(
+    agent_id="research-agent-1",
+    sequence=1,
+    ctx=ctx,
+    violations=violations,
+    signing_key="dev-only-signing-key",
+    policy_version="local-policy-v1",
+)
+assert verify_receipt(receipt, "dev-only-signing-key").valid
+print(receipt["decision"], receipt["receipt_hash"])
 ```
 
 ### 5. Register custom contracts
@@ -266,8 +284,7 @@ Code enforcement is the default. Prose rules are a last resort -- they work unti
 ## Testing
 
 ```bash
-cd shadow-kit
-python -m pytest tests/ -v
+python3 -m pytest tests/ -v
 ```
 
 

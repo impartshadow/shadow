@@ -4,6 +4,11 @@ basic_assistant.py -- Example: setting up Shadow Kit contracts for a basic assis
 This shows how to wire contract checking into your agent's action/response loop.
 """
 
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from shadow_kit.contracts import (
     Contract,
     ContractContext,
@@ -13,6 +18,7 @@ from shadow_kit.contracts import (
     get_governor,
     register_contract,
 )
+from shadow_kit.receipts import issue_contract_receipt, verify_receipt
 
 
 # ---------------------------------------------------------------------------
@@ -148,6 +154,34 @@ def example_governance():
 
 
 # ---------------------------------------------------------------------------
+# 6. Issue a signed audit receipt
+# ---------------------------------------------------------------------------
+
+def example_signed_receipt():
+    """Turn a contract decision into a verifiable audit artifact."""
+    signing_key = "local-dev-key"
+    ctx = ContractContext(
+        action="git_push",
+        files_edited=["src/main.py"],
+        response_text="Done.",
+    )
+    violations = check_all_pre(ctx)
+
+    receipt = issue_contract_receipt(
+        agent_id="demo-agent",
+        sequence=1,
+        ctx=ctx,
+        violations=violations,
+        signing_key=signing_key,
+        policy_version="demo-policy-v1",
+    )
+
+    print(f"Decision: {receipt['decision']}")
+    print(f"Receipt hash: {receipt['receipt_hash']}")
+    print(f"Signature valid: {verify_receipt(receipt, signing_key).valid}")
+
+
+# ---------------------------------------------------------------------------
 # Run all examples
 # ---------------------------------------------------------------------------
 
@@ -180,3 +214,9 @@ if __name__ == "__main__":
     print("Example 5: Governance metrics")
     print("=" * 60)
     example_governance()
+
+    print()
+    print("=" * 60)
+    print("Example 6: Signed receipt")
+    print("=" * 60)
+    example_signed_receipt()
