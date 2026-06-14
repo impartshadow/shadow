@@ -178,6 +178,8 @@ your-project/
 
 5. **Governance** (`ContractGovernor`) tracks violation counts, contract error rates, and auto-recovery success rates. Use `get_governor().get_metrics()` to monitor contract system health.
 
+6. **Receipts** (`shadow_kit.receipts`) turn each governed decision into a signed JSON artifact. The open-source kit uses caller-provided HMAC keys; a gateway deployment can hold signing keys outside the agent container, attach policy versions and metering, and export the receipt chain for audits.
+
 ### Contract lifecycle
 
 ```
@@ -186,6 +188,43 @@ Action/Response -> check_pre()/check_post() -> Violation? -> Block/Warn -> Recov
 ```
 
 Contracts support auto-recovery: instead of just blocking, a contract can rewrite the response to fix the violation. Override `auto_recover()` in your Contract subclass.
+
+### Signed Audit Receipts
+
+Receipts are the bridge from local contract checks to a governed agent control
+plane. A receipt records the governed agent id, sequence number, previous
+receipt hash, action, decision, policy version, context hash, contract
+violations, metering fields, HMAC-SHA256 signature, and signed-envelope hash.
+
+```python
+from shadow_kit.contracts import ContractContext, check_all_pre
+from shadow_kit.receipts import issue_contract_receipt, verify_receipt
+
+ctx = ContractContext(
+    action="git_push",
+    files_edited=["src/main.py"],
+    response_text="Done.",
+)
+violations = check_all_pre(ctx)
+
+receipt = issue_contract_receipt(
+    agent_id="demo-agent",
+    sequence=42,
+    ctx=ctx,
+    violations=violations,
+    signing_key="local-dev-key",
+    policy_version="runtime-contracts-v1",
+    previous_hash="",
+)
+
+verified = verify_receipt(receipt, "local-dev-key")
+assert verified.valid
+```
+
+In an open-core setup, the agent can emit local receipts. In the commercial
+gateway architecture, the gateway owns the signing key and the agent only sees
+the decision. That makes policy enforcement, per-governed-agent metering, and
+audit export independent of the agent's prompt.
 
 ## Included contracts
 
