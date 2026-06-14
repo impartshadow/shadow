@@ -421,6 +421,24 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Recovery:** Route to `mcp__shadow__run_shell` with the appropriate `core.*` module. Only escalate to the user if the fallback also fails.
 **Note:** Specialized variant of FM-001. FM-001 catches "I can't access X" claims; FM-027 catches auth-failure surfacing specifically.
 
+## FM-033: persistent-correction
+**Pattern:** Shadow reproduces a behavior the user explicitly told it to stop, after the correction was logged. Example: continuing to say "Would you like me to" after the user said "stop asking permission"; using "we built" after the user said attribution is "I built / Shadow built"; surfacing an auth blocker without a home-proxy attempt after the user said to try it first.
+**Root cause:** Stop directives accumulate in `state/behavioral_stops.json` but the response generator regenerates the corrected pattern because (1) the upstream prompt/template still contains the trigger, (2) the rule isn't prominent in CLAUDE.md quick reference, or (3) the original stop directive was mis-mined (e.g. source-redirect mistaken for behavioral stop) and the contract retries against a stop that no longer applies.
+**Rate:** 6/24h on 2026-06-12 (3 of which were a single mis-mined "Innermost Loop newsletter" source-redirect; filtered at load time after gap-closer 2026-06-12).
+**Contracts:**
+- `PersistentCorrectionGuard` (`persistent-correction`, warn/block) — Haiku/Gemini scores response against each surviving stop in `state/behavioral_stops.json`. Block threshold 0.85, warn 0.72. Source-redirect directives ("switch to X", "find Y instead") are filtered at load time (gap-closer 2026-06-12). Per-original-message dedup at load time (gap-closer prior session — 13 variants of one correction).
+- `PatternedStopContract` (`patterned-stop`, block) — Regex match against known stops: approval-seeking, "honest take" preamble, "bottom line:" framing, home-proxy handoff without attempt, "we built" attribution.
+- `WeBuiltAttribution` (`we-built-attribution`, block) — Specialized check for the #1 recurring stop ("Shadow built" not "we built").
+**Code guards:**
+- `core/contracts.py:PersistentCorrectionGuard` — load-time stop filter + dedup + Haiku/Gemini scoring; per-stop confidence threshold configurable via `state/persistent_correction_config.json`.
+- `core/contracts.py:PatternedStopContract` — regex-first detection, no LLM round-trip for the high-volume stops.
+- `scripts/behavioral_stops_miner.py` — nightly miner; dedupes at write time after gap-closer found Haiku producing 13 directive variants per origin correction.
+- `scripts/persistent_correction_falsification.py` — validates that recent blocks were true positives; reverts the threshold (`state/persistent_correction_config.json`) if false-positive rate is high.
+**Recovery:** (1) Read the stop directive. (2) Identify the upstream source of the regenerating pattern — usually a prompt template under `prompts/`, `skills/`, or a heartbeat/digest renderer. (3) Patch the source so the pattern can't regenerate, then add the stop as a quick-reference rule in CLAUDE.md if not already present. (4) For mis-mined stops, file an issue against the miner; the load-time filter + dedup catches most of these but new patterns need explicit filters.
+**Escalation:** Surface to the user only when an architectural rework is required (e.g., a stop that requires reshaping a whole response pipeline). Day-to-day stops are closed silently — the user should never have to re-issue the same correction twice.
+**Audit signal:** `scripts/session_audit.py` scores FM-033 from 0–10 against five FM-033 markers in the rolling conversation window; score appears in `state/last_self_audit.json`. Score ≥7/10 for 3 consecutive sessions closes any high-priority backlog item that referenced FM-033.
+**Origin:** Coined post-session 2026-04 after 6+ same-correction repeats in a week. Refined 2026-06-08 after the user's "Stop doing this bottom line business" — 28 hits/24h on `bottom_line_framing` classifier.
+
 ### FM-011 — Action Deferral
 
 **Description:** Agent proposes or offers to act instead of executing. Manifests as "would you like me to", "I can X if you want", "shall I", "let me know if you'd like", or similar phrases with no tool execution this turn.

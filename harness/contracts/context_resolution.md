@@ -43,3 +43,24 @@ Pre-response gate — harness-enforced
 - **Precondition:** Grep for the same pattern in other files before pushing.
 - **Hotspots:** `_fetch_emails()` in briefing.py/heartbeat.py; suppression logic
   in `_apply_email_prefs`/`_is_suppressed`.
+
+### 6. Bare "step N" references
+- **Trigger:** the user writes a message like "do step 4", "go ahead with step 2",
+  "did you do step 3?" with no explicit task name attached.
+- **Precondition:** Resolve which active task thread owns the step number BEFORE
+  executing.
+- **Lookup order:**
+  1. The CURRENT message — does it name the task? ("step 4 of the daily moonshot")
+  2. Prior 5 messages in the same channel — is one task clearly the antecedent?
+  3. `state/active_tasks.json` / `state/loops.json` — find threads with a step list
+     that includes step N
+  4. If exactly one candidate matches: restate the target in one line
+     (`Doing step 4 of <task name>: <step summary>`) before executing.
+  5. If 2+ candidates match: ask ONE BALAR question naming the candidates.
+- **Violation:** Acting on "step N" without first restating which task and
+  which step is being performed. This forces the user to verify and re-state
+  ("No. The compounding step. Did you do step 4 of the daily moonshot…").
+- **Origin:** 2026-06-13 friction — Shadow executed overnight-buffer step 4
+  when the user meant Daily Moonshot step 4 (compounding effect post).
+  Backlog `20260613T081513_interaction_theme_an_2078` +
+  `20260613T081759_daily_friction_fixer_abf2`.

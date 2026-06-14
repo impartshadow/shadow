@@ -109,9 +109,13 @@ Expand by editing the list and adding a regression case to
 `tests/test_contracts.py::TestDoxGuard`.
 
 ## Violation message discipline
-The violation message counts matched identifiers but never echoes the
-matched substring — log lines and violation reports must not themselves
-leak the identifier they blocked.
+The violation message counts matched identifiers and includes an
+anonymized **category breakdown** (`[categories: deny-list, email, phone]`)
+but never echoes the matched substring — log lines and violation reports
+must not themselves leak the identifier they blocked. The category
+breakdown was added 2026-06-14 to let gap-closure passes diagnose
+recurrence patterns (same category repeating across sessions = same
+upstream bug) without exposing the value.
 
 ## No auto-recovery
 Blocked responses must be **regenerated from scratch** without the
