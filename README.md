@@ -38,7 +38,7 @@ signed receipt.
 ### 1. Install
 
 ```bash
-pip install shadow-kit
+pip install git+https://github.com/impartshadow/shadow.git
 ```
 
 Or install from source:
