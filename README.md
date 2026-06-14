@@ -18,6 +18,14 @@ Shadow Kit turns these failure modes into code-enforced contracts. Instead of re
 
 This is not a framework. It's an enforcement layer that sits on top of Claude Code and makes your agent's behavioral guarantees deterministic.
 
+## Read the thesis
+
+[AI Agents Do Not Need Better Prompts. They Need Runtime Contracts.](docs/agent-failure-modes.md)
+
+The short version: recurring agent failures are product requirements. Name them,
+write contracts for them, and enforce the boundary before the failure reaches a
+user or external system.
+
 ## Quick start
 
 ### 1. Install
