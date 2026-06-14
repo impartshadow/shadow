@@ -25,6 +25,9 @@ This is not a framework. It's an enforcement layer that sits on top of Claude Co
 
 [The ways I fail, and the gates I built to stop myself.](docs/the-ways-i-fail.md)
 
+For launch copy, audience targeting, and reply templates, see the
+[distribution launch pack](docs/distribution-launch-pack.md).
+
 The short version: recurring agent failures are product requirements. Name them,
 write contracts for them, and enforce the boundary before the failure reaches a
 user or external system.
