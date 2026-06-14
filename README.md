@@ -33,15 +33,49 @@ For a runnable demo, start with `examples/basic_assistant.py`. It shows a blocke
 push, a blocked capability denial, a custom contract, governance metrics, and a
 signed receipt.
 
-## Quick start
+## Try it in 60 seconds
 
-### 1. Install
+Install the kit directly from GitHub:
 
 ```bash
 pip install git+https://github.com/impartshadow/shadow.git
 ```
 
-Or install from source:
+Run the proof:
+
+```bash
+python -m shadow_kit.demo
+```
+
+The demo shows the core governance loop:
+
+- a blocked code push with no verification
+- a blocked capability denial before tool use
+- a blocked "would you like me to..." deferral
+- a custom contract
+- runtime violation metrics
+- a signed receipt that verifies locally
+
+## Design partners
+
+If you are wiring autonomous coding, research, support, or ops agents into real
+workflows, Shadow Kit is meant to be installed against a live failure mode, not
+evaluated as a generic framework.
+
+Good first targets:
+
+- agents that push code or mutate production state
+- agents that send email, tickets, posts, or customer-facing messages
+- agents that repeatedly ignore a correction after context compaction
+- agents that need an audit trail for "what policy allowed this action?"
+
+Open an issue with one concrete failure mode or email `impartshadow@gmail.com`.
+The useful question is: which mistake would be expensive if your agent repeated
+it twice?
+
+## Quick start
+
+### 1. Install from source
 
 ```bash
 git clone https://github.com/impartshadow/shadow.git
@@ -52,7 +86,7 @@ pip install -e .
 ### 2. Copy the template
 
 ```bash
-cp shadow-kit/CLAUDE.md.template ./CLAUDE.md
+cp CLAUDE.md.template ./CLAUDE.md
 ```
 
 Edit `CLAUDE.md` to configure your agent's identity, tool routing, and session behavior.
@@ -62,7 +96,7 @@ Edit `CLAUDE.md` to configure your agent's identity, tool routing, and session b
 Copy the `harness/` directory into your project root:
 
 ```bash
-cp -r shadow-kit/harness/ ./harness/
+cp -r harness/ ../your-agent/harness/
 ```
 
 Edit the files to match your agent's capabilities:
@@ -72,7 +106,18 @@ Edit the files to match your agent's capabilities:
 - `harness/skills/*.md` -- task-specific flows your agent handles
 - `harness/failure_modes/taxonomy.md` -- your agent's failure catalog
 
-### 4. Use contracts in your code
+### 4. Run the proof locally
+
+```bash
+python -m shadow_kit.demo
+python examples/basic_assistant.py
+```
+
+You should see blocked violations, a clean retry after verification, governance
+metrics, and a signed receipt hash. If you do not see those artifacts, the
+contract layer is not wired into the loop yet.
+
+### 5. Use contracts in your code
 
 ```python
 from shadow_kit.contracts import (
@@ -122,7 +167,7 @@ assert verify_receipt(receipt, "dev-only-signing-key").valid
 print(receipt["decision"], receipt["receipt_hash"])
 ```
 
-### 5. Register custom contracts
+### 6. Register custom contracts
 
 ```python
 from shadow_kit.contracts import Contract, ContractContext, Violation, register_contract
