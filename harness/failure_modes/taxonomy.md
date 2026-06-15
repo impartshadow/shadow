@@ -175,6 +175,8 @@ Push back with one clear objection when the user is going down a bad path.
 
 **Severity:** Block.
 
+**Sub-pattern (c) — continuation ambiguity:** Turn ends with "picking it up next" / "I'll start on X next" / "say the word and I'll cycle it" — language that reads as *Shadow is still working* — but the turn is terminal and nothing is running. the user waits, gets silence, and has to ask "are you still working?" (recurring symptom, 2026-06-15). Contract `continuation-ambiguity-guard` (`core/contracts.py:ContinuationAmbiguityGuard`) fires only when the implication is in the tail of the reply, no async-launch tool ran this turn, and no explicit handoff marker ("your call", "say go", "standing by") is present. Recovery: either do the next thing now, or make the handoff explicit. The honest in-flight case (a real background task running) is reported separately by a runtime footer in `discord_bot.py` that reads the live task registry — `🔄 Still running in background: …`.
+
 ### FM-004 — Wrong Tool Route / Capability Misroute
 
 **Code guard:** `WebToolGuardV2` (replaces `WebToolGuard`, `WrongToolRoute`, `CapabilityMisroute`)

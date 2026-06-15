@@ -71,7 +71,9 @@ buffer (re-read git log) before retrying the response.
 8 violations in 4h on 2026-06-14 — fake hashes `28404c9` (Coinbase CDP, 3 hits
 00:55–00:59), `207796e` (Coinbase CDP, 1 hit 01:48), `7e040ed` (Shadow Kit, 3
 hits 03:45–03:56), `b8ea668` + `a8dec41…` (Shadow Kit, same 03:53–03:56 burst).
-All within-session hallucinations on push-receipt language; contract caught
-every instance. Pattern is regenerating across sessions, so the upstream rule
-was promoted to CLAUDE.md #29 (2026-06-14): commit hashes must be the literal
-`git rev-parse HEAD` output, never a remembered short hash.
+Second burst 2026-06-14 12:24–13:48 (6 more hits): fake hashes `9d74091`,
+`d2e107a`, `f059e72` cited as push receipts during research/distribution
+sessions. All within-session hallucinations on push-receipt language; contract
+caught every instance. Pattern is regenerating across sessions, so the upstream
+rule was promoted to CLAUDE.md #29 (2026-06-14): commit hashes must be the
+literal `git rev-parse HEAD` output, never a remembered short hash.
