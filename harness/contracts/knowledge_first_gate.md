@@ -55,6 +55,7 @@ no Shadow contract yet covers affordability (contradiction integration risk).
 - Topic involves a named person where recent events may have changed the answer
 - Shadow genuinely uncertain whether the information is within its knowledge boundary
 - The retrieval target is specific and unambiguous (a URL, a name, a precise factual gap)
+- Version-specific game mechanics, encounter tables, emulator/platform questions — verify against the specific version/platform (e.g. Pokémon Yellow on Delta) before answering; cross-version generalizations are a known failure mode
 
 ## Escalation
 None — this is a latency/efficiency gate, not a safety gate. False negatives (searching when unnecessary) are benign. False positives (not searching when needed) should be corrected by the user immediately.

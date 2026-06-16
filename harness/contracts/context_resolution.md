@@ -44,7 +44,18 @@ Pre-response gate — harness-enforced
 - **Hotspots:** `_fetch_emails()` in briefing.py/heartbeat.py; suppression logic
   in `_apply_email_prefs`/`_is_suppressed`.
 
-### 6. Bare "step N" references
+### 6. Pronoun-based scope corrections
+- **Trigger:** the user sends a short corrective with a pronoun/demonstrative and no
+  named target ("we don't use the API", "stop calling that", "don't do it that way").
+- **Precondition:** Before changing any code, resolve and restate the target
+  subsystem from the quoted message — quote the prior line/file/symbol the
+  correction refers to and name it back in one line
+  (`Correcting <subsystem/file:symbol>: <what changes>`) BEFORE editing.
+- **Violation:** Applying the correction broadly (e.g. ripping out all API calls)
+  when the user meant one specific call site. Wrong-scope edits cause loop-tripwire
+  hits and unrelated regressions.
+
+### 7. Bare "step N" references
 - **Trigger:** the user writes a message like "do step 4", "go ahead with step 2",
   "did you do step 3?" with no explicit task name attached.
 - **Precondition:** Resolve which active task thread owns the step number BEFORE
