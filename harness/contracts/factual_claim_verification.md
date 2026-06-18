@@ -8,7 +8,7 @@
 
 Fires post-response when both are true:
 
-1. The response contains either an uncited statistic (number + unit like `%`, `users`, `days`, `months`) OR a project-name assertion involving an active project (`arbor`, `anvil`, `awg`, `moltbook`, `echo`, `upwork`, `substack`, `stripe`).
+1. The response contains either an uncited statistic (number + unit like `%`, `users`, `days`, `months`) OR a project-name assertion involving an active project (`arbor`, `anvil`, `awg`, `moltbook`, `echo`, `substack`, `stripe`).
 2. No evidence-producing tool was called in this turn (the canonical set lives in `_EVIDENCE_TOOLS` on the contract — currently `Read`, `Bash`, `Grep`, `Glob`, and the `mcp__shadow__*` retrieval tools).
 
 If the response opens with an evidence-source tool call (or contains hedging words like `appears`, `seems`, `based on`), the contract is silent.

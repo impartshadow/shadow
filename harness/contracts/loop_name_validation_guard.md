@@ -11,13 +11,25 @@ inventing a loop ID, or carrying over a renamed loop's old name.
 
 ## Trigger
 Post-check on response text. The regex
-`\b([\w-]+(?:\s+[\w-]+){0,2})\s+loop\b` extracts candidate loop
-references (e.g. "arbor loop", "echo loop", "the foo loop"). Each
-candidate is checked against the lowercased set of `id` and `name`
-fields from `state/loops.json`.
+`\b(?:the|our|this|that|a|an|named|called)\s+([\w-]+(?:\s+[\w-]+)?)\s+loop\b`
+extracts candidate loop references that follow a determiner
+(e.g. "the arbor loop", "our echo loop", "this brief-production
+loop"). Each candidate is checked against the lowercased set of
+`id` and `name` fields from `state/loops.json`.
+
+The determiner requirement (tightened 2026-06-17) drops natural-
+prose mentions of "loop" that are not naming a specific Shadow
+loop — phrases like "entries from each loop", "how the whole
+loop", "with no Upwork loop" no longer fire because their
+preceding word is not a determiner.
 
 Code blocks (```fenced```) are stripped before scanning to avoid
 firing on code that mentions loop identifiers.
+
+A negation lookback (`_NEGATION_PREFIX_RE`) skips any match where
+the 30 chars before the determiner contain "no / without / not /
+retired / removed / deprecated" — Shadow is acknowledging the
+loop's *absence*, not claiming it exists.
 
 ## Filtering
 False-positive control is done with two frozensets:
@@ -50,3 +62,16 @@ and true hallucinations ("frobnicator loop") which must still fire.
 - 2026-06-17: Added architectural pattern descriptors after three
   false positives in 4h on "agentic Gemini loop" / "agentic tool loop"
   phrasing in Gemini-routing context.
+- 2026-06-17b (gap-closer): Tightened `_LOOP_REF_RE` to require a
+  determiner before the candidate, after 7 false positives in 4h
+  on phrases like "entries from each loop", "how the whole loop",
+  "with no Upwork loop". Added quantity adjectives ("whole",
+  "entire", "single", etc.) to `_COMMON_WORDS` and added a
+  `_NEGATION_PREFIX_RE` lookback for explicit absence statements.
+- 2026-06-18 (gap-closer): Single-token filter on `id_words`. Loop
+  IDs in `state/loops.json` are always single-token slugs (`arbor`,
+  `awg-outreach`), so any candidate that still has multiple tokens
+  after stop-word filtering is prose, not a name. Closes residual
+  false-positive bucket: "QA stamps to loop", "entry to every loop",
+  "the whole posting loop", "entries from each loop". 4 regression
+  tests added.
