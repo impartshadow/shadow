@@ -1,7 +1,9 @@
-# Design principle: API-first tool routing
+# API-first tool routing
 
 ## Type
-Harness-side design principle — informs future contract and routing decisions.
+**Code-enforced pre-check** — `ApiFirstRoutingGuard` in `core/contracts.py` (FM-004, warn-only).
+Fires when `browse_url` or `browser_open` targets a domain that has a canonical API client.
+See `harness/contracts/binding_time_principle.md` for the complementary design principle (not code-enforced).
 
 ## Motivation
 Reflex's computer-use research (cited Innermost Loop 2026-05-06) measured a **45x cost premium** for pixel/screenshot-based agents versus API-native agents on equivalent tasks. The cost to act autonomously is dropping, but only for agents that use structured interfaces.
@@ -16,6 +18,10 @@ When selecting a tool or automation approach, always prefer structured API route
 
 ## Cost signal
 45x is a decision boundary, not a nudge. If an API path exists and Shadow chooses a GUI path instead, that is a routing error regardless of whether it succeeds.
+
+## Enforcement
+- `core/contracts.py → ApiFirstRoutingGuard` (pre-check, warn, committed `b6ac60a`)
+- `tests/test_contracts.py → TestApiFirstRoutingGuard` (8 tests)
 
 ## Contracts referenced
 - `capability_misroute.md` — primary routing gate

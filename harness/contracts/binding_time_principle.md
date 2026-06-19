@@ -1,6 +1,6 @@
 # Binding-Time Principle
 
-**Type:** Design principle (harness doc)
+**Type:** DESIGN PRINCIPLE — not code-enforced. No pass/fail gate in `core/contracts.py`. Informs contract authoring only.
 **Applies to:** New contract design, permission grants, tool access decisions
 
 ## Principle

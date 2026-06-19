@@ -29,6 +29,7 @@ Before ANY denial response, ALL of the following must be true:
 1. Checked `memory/reference_capability_inventory.md`
 2. Tried every listed path for that resource
 3. Ran a smoke test — actually executed a command to confirm access is broken
+4. For any GitHub/OAuth/cookie flow, the response MUST include a home-proxy attempt (`mcp__shadow__run_shell` with a proxy-routed curl or browser script) before the word "blocker" appears.
 
 Before ANY tool-call omission response, the following must be true:
 1. The tool implied by the hedge has been attempted in the same turn
