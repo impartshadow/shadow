@@ -21,7 +21,14 @@ When selecting a tool or automation approach, always prefer structured API route
 
 ## Enforcement
 - `core/contracts.py → ApiFirstRoutingGuard` (pre-check, warn, committed `b6ac60a`)
-- `tests/test_contracts.py → TestApiFirstRoutingGuard` (8 tests)
+- `tests/test_contracts.py → TestApiFirstRoutingGuard` (10 tests)
+
+## Carve-outs
+- **X / Twitter reads** — `echo/twitter.py` is itself cookie/browser-based (no public read API),
+  so `browse_url` on `x.com` / `twitter.com` profile, status, and timeline URLs is the canonical
+  stealth path (see `feedback_notes_blocked.md`). The guard only fires for write actions —
+  URLs containing `/compose/tweet`, `/intent/tweet`, `/intent/like`, `/intent/follow`,
+  `/intent/retweet`, `/intent/reply`, or `/compose/message`. Writes route to `echo/twitter_browser.py`.
 
 ## Contracts referenced
 - `capability_misroute.md` — primary routing gate

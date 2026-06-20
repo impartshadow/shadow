@@ -42,3 +42,15 @@ framing), `_RUN_PATH` (cited test/file paths). Dirty-worktree state injected by
 **Escalation:** None. Block silently and let the model retry. Real completion
 claims always have an artifact; this contract just makes that structurally
 inescapable.
+
+**Known upstream regenerators (fixed):**
+
+- `core/skill_generator.py` (fixed 2026-06-20): the background skill_generator,
+  invoked from `core/discord_bot.py` after every interaction with ≥5 tool calls
+  or any error recovery, was Haiku-merging "patches" into existing hand-authored
+  skill files (`skills/intake_triage.md`, `skills/general_workflow.md`,
+  `skills/echo_content.md`) without committing. Each rewrite left an uncommitted
+  diff that Check C then blocked on the next closure phrase. Fixed by (1)
+  dynamically populating `_HAND_AUTHORED` from every existing `skills/*.md` file
+  at module load, and (2) refusing to write at all if the target file already
+  exists. Auto-gen now CREATES new skill files only; existing files are canonical.

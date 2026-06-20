@@ -2,7 +2,7 @@
 
 **Type:** Static analyzer + CI regression test (test-enforced)
 **Failure mode:** FM-034 (factual errors: false "expired" / "stalled" / "blocked" alerts emitted from a proxy signal)
-**Trigger:** `python3 scripts/proxy_signal_audit.py` (also run by `tests/test_proxy_signal_audit.py` as a regression gate)
+**Trigger:** `python3 scripts/proxy_signal_audit.py` (also run by `tests/test_proxy_signal_audit.py` as a regression gate, and by `scripts/nightly.py` Phase 1.7a which posts any non-zero findings to `#shadow-log`)
 
 **Precondition:** No function in `scripts/*` or `core/*` may emit a status verdict (`expired`, `stale`, `stalled`, `blocked`, `dead`, `missing`, `broken`, `down`, `failing`, `unhealthy`, ...) from a code path gated by file mtime without also calling a real validator (HTTP/subprocess/explicit verify).
 
