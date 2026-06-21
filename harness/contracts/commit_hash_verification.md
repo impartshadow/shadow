@@ -43,6 +43,13 @@ only if `returncode == 0` AND `stdout.strip() == "commit"`. Anything else —
 nonexistent object, non-commit object (tree/blob), git not available —
 unresolves the SHA.
 
+A SHA is checked against the Shadow repo first, then against the sibling
+repos Shadow legitimately operates in (`/home/agentshadow/agent-gateway`,
+`/home/agentshadow/agent-contracts`). A hash that resolves in any of them
+is real, not fabricated — this prevents false fires when Shadow reports
+push receipts for the open-source spinoff repos (4-hit burst on
+2026-06-20 against real `agent-contracts` HEAD hashes was the trigger).
+
 If git itself raises (subprocess failure, timeout), the check returns `None`
 rather than blocking. Infrastructure failure must not gate generation.
 

@@ -75,3 +75,13 @@ Pre-response gate — harness-enforced
   when the user meant Daily Moonshot step 4 (compounding effect post).
   Backlog `20260613T081513_interaction_theme_an_2078` +
   `20260613T081759_daily_friction_fixer_abf2`.
+
+### 8. Quoted-reply referent resolution
+- **Trigger:** the user replies with "this", "it", "that", or similar demonstrative,
+  AND the message quotes/replies to a specific prior message.
+- **Precondition:** Resolve the referent to the QUOTED message, not the most
+  recent standalone message on the same topic.
+- **Violation:** Answering about $ORNN when the user pasted JSON and asked "what
+  does this mean?" — the JSON is the referent, not the prior ticker discussion.
+- **Origin:** 2026-06-20 — context misread answered $ORNN instead of resolving
+  to the JSON the user had quoted in the reply.
