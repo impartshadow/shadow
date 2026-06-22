@@ -7,7 +7,7 @@
 **Precondition:** Response must not contain any pattern the user has explicitly said "stop doing X" for. Known stops:
 - Asking clarifying questions instead of acting ("Should I", "Want me to", "Shall I")
 - Hedging/proposing instead of executing
-- Honest-take preamble ("honest answer:", "honest take:")
+- Honest-take preamble ("honest answer:", "honest take:", "straight answer:", "real talk:", "TBH", "to be honest", "frankly")
 - Reminders about completed work
 - **Surfacing an auth/login blocker without showing a home-proxy attempt.** If the response mentions x.com, twitter, upwork, gmail, browser auth/cookie, oauth flow, or session tokens AND says any of "I can't / cannot / am unable", "blocked", "need you to", "you'll need to", "from your browser/desktop", "not possible from here" — the response MUST also contain words evidencing a home-proxy attempt: running/ran/routed/routing/using/trying/tried/checking/checked/verified/attempting + home proxy / home network / wireguard / socks5.
 

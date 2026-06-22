@@ -84,3 +84,16 @@ sessions. All within-session hallucinations on push-receipt language; contract
 caught every instance. Pattern is regenerating across sessions, so the upstream
 rule was promoted to CLAUDE.md #29 (2026-06-14): commit hashes must be the
 literal `git rev-parse HEAD` output, never a remembered short hash.
+
+2026-06-20/21 burst: 5 more blocks within ~9h spanning gap-closer / Substack
+distribution sessions — `f99d4ec` (2026-06-20T18:32), `0d1f3b2`, `10c0c47`,
+`7db4f9f` (single response, 2026-06-20T19:25), `1bb1470` (2026-06-21T02:57),
+`847386a` (03:03), `981c1c3b` (03:55). Every hit was the gap-closer's own
+shadow-log receipt template fabricating a `<short_sha>` placeholder instead
+of running `git rev-parse --short HEAD`. The contract performed correctly —
+this is *not* a tuning issue. Upstream fix is behavioral, already covered by
+Rule 29: when filling a receipt template that ships a hash, the hash must
+come from a same-turn shell read, never from the model's working memory of
+"the last commit I just made". Multi-commit gap-closer sessions are extra
+risky because the immediately-prior commit's hash is fresh in context and
+easy to paraphrase incorrectly.
