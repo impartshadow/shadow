@@ -76,7 +76,25 @@ Pre-response gate — harness-enforced
   Backlog `20260613T081513_interaction_theme_an_2078` +
   `20260613T081759_daily_friction_fixer_abf2`.
 
-### 8. Quoted-reply referent resolution
+### 8. Platform-message referent resolution (inbox-first)
+- **Trigger:** the user asks about "the <Platform> message / DM / email" where
+  `<Platform>` is Reddit, Substack, Twitter, X, Discord, LinkedIn, Telegram,
+  Instagram, Gmail, etc.
+- **Precondition:** Default to checking the inbox/DMs of that platform FIRST,
+  not the content of the most recent outbound item Shadow posted there.
+- **Lookup order:**
+  1. The inbox/DM endpoint for that platform (e.g., Reddit modmail/inbox API,
+     Substack DM, gmail_summary.py for Gmail, twitter inbox).
+  2. Only if the inbox is empty or the message is clearly about Shadow's own
+     post: fall back to outbound content.
+- **Violation:** Summarizing Shadow's own outbound post body when the user asked
+  about an inbound message, forcing him to re-ask ("the Reddit message in our
+  inbox").
+- **Origin:** 2026-06-22 friction — Shadow misread "Reddit message" as post
+  content; the user had to re-ask explicitly. Backlog
+  `20260622T081058_daily_friction_fixer_9581`.
+
+### 9. Quoted-reply referent resolution
 - **Trigger:** the user replies with "this", "it", "that", or similar demonstrative,
   AND the message quotes/replies to a specific prior message.
 - **Precondition:** Resolve the referent to the QUOTED message, not the most
