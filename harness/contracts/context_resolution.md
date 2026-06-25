@@ -103,3 +103,13 @@ Pre-response gate — harness-enforced
   does this mean?" — the JSON is the referent, not the prior ticker discussion.
 - **Origin:** 2026-06-20 — context misread answered $ORNN instead of resolving
   to the JSON the user had quoted in the reply.
+
+### 10. "Go look at it" / "check on it" — fetch, don't recall
+- **Trigger:** the user says "go look at it", "check on it", or a near-synonym
+  ("take a look at it", "go check on X", "look at it") referencing a named
+  project, service, or artifact.
+- **Precondition:** The next action MUST be a live tool call (search, fetch,
+  Read, Grep, API call) on the named target BEFORE any prose response.
+- **Violation:** Answering from memory/recall when the user explicitly asked for
+  a fresh check. The phrase is an instruction to fetch, not retrieve.
+- **Origin:** Jarvis lookup answered from stale memory instead of live search.
