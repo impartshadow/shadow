@@ -59,6 +59,7 @@ stop, call the tool, and replace the hedge with the result.
 | Infra component "not wired"/missing/unconfigured (tunnel, service, daemon) | Run the status command first and paste output (`wg show`, `systemctl status <unit>`, `ip a`, `ss -lntp`); the blocker claim is only valid if the command confirms it |
 | Run a shell command / access the shell | `mcp__shadow__run_shell` — never claim "no shell access" without an attempt |
 | Read a secret / vault entry | `bw get <item>` (Bitwarden CLI is authenticated and on PATH); attempt before claiming credentials are unavailable |
+| Substack publish failed — "stale cookies" | Cookie *age* is NOT a blocker (Quick Reference rule 13; the user-corrected 2026-06-24). The blocker is the HTTP failure on the publish call. Response template for a 403/401: start with the HTTP status + endpoint + response body; do NOT lead with cookie mtime. Cookie staleness is on the blocked-blocker list — never surface it as the reason a Substack publish failed. |
 
 ## Known tool-call omission phrases to never emit without acting
 
