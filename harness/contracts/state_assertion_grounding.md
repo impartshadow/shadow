@@ -89,7 +89,14 @@ specific failure pattern to a Quick Reference rule in CLAUDE.md if it stays
 hot for >3 consecutive days.
 
 ## Recent activity
-3 fires in 24h on 2026-06-20 (00:23, 14:08, 14:43). Each fire was a
-definitive `Yes/No/Confirmed`-shaped answer to a verification-shaped question
-where no read tool ran. Pattern is recurring at warn-level cadence; not yet
-hot enough to warrant a Quick Reference promotion.
+2026-06-27 gap-closer window: **6 fires in 4h, 7 fires in 24h** — the top
+violator in the 4h window. Co-fires with `concurrence-grounding` (sibling
+guard for the assertion-by-the user inverse). Quick Reference rule 50 already
+covers the retrospective- and forward-count classes ("what shipped" + status
+counts), so the rule itself is documented; the remaining gap is generation-time
+salience on the broader `Yes/No/Confirmed`-shaped answer class. Sister
+sibling: `concurrence-grounding` doc was added 2026-06-27.
+
+Prior data point: 3 fires in 24h on 2026-06-20 (00:23, 14:08, 14:43). The
+trendline is climbing, not flat; if the next gap-closer window also reports
+≥6/4h, promote a generalized Quick Reference rule beyond the rule-50 cases.
