@@ -10,7 +10,10 @@ Every `respond` action where `response_text` is >= 120 characters.
 - FM-001: Claiming inability without showing an attempt first
 - FM-011: Proposing or describing instead of executing
 - FM-012: Instructing the user to do something manually the agent could handle
-- FM-013: Responding beyond the scope of what was asked
+- FM-013: Scope mismatch — EITHER responding beyond what was asked OR silently
+  dropping one of multiple distinct asks in the user message. The intent-judge
+  (`_INTENT_PROMPT`) catches multi-question drops; the rule-judge (`_PROMPT`)
+  catches over-scope. Both register as FM-013.
 - FM-019: Unnecessary hedging, clarification requests, or trailing off
 
 ## Enforcement

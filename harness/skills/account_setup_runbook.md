@@ -65,6 +65,15 @@ Use `core/state_io.py` for reads/writes.
 5. **On completion**: Set `status=complete`, write a one-line receipt to `#shadow-log`: `✅ account-setup · <service> · credentials in bitwarden as <entry_name>`.
 6. **On hard block**: Set `status=blocked`, list the blocker in `blockers`. Surface to the user ONLY if it qualifies under the standing-authority blocker allowlist (auth requiring the user's hands, money beyond $20/mo, legal/compliance, or irreversible high-blast-radius action).
 
+## Telegram user-auth / BotFather preflight
+
+Use this service-specific checklist before any attempt to create Telegram bots autonomously through BotFather:
+
+1. State the platform constraint upfront: Telegram Bot API cannot look up or initiate chats with private users by `@username`; private users must message the bot first so Shadow can capture `chat_id`.
+2. For user-account auth, collect the full tuple in one block before starting: `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, and `TELEGRAM_PHONE`.
+3. Run the shared preflight (`scripts/telegram_api_setup.py`) before claiming readiness for an SMS/login code. If any field is missing, surface the missing field list and do not say the code request was sent.
+4. Only after the preflight passes, run `scripts/telegram_auth.py`; after the session exists, `scripts/botfather_create.py --name ... --username ... --tenant ...` may create and store tenant bot tokens.
+
 ## Hard stops
 
 1. **No re-ask of an already-answered input** — if `inputs_received` has the field the user is being asked about, look there first.
