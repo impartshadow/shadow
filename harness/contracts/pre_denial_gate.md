@@ -30,6 +30,7 @@ Before ANY denial response, ALL of the following must be true:
 2. Tried every listed path for that resource
 3. Ran a smoke test — actually executed a command to confirm access is broken
 4. For any GitHub/OAuth/cookie flow, the response MUST include a home-proxy attempt (`mcp__shadow__run_shell` with a proxy-routed curl or browser script) before the word "blocker" appears.
+5. For any web search that returned a CAPTCHA/block/403/429 on the first attempt, the NEXT action MUST be a home-proxy retry of the same query (via `mcp__shadow__run_shell` with a proxy-routed `mcp__shadow__web_search` / curl) — NOT a cold second search engine. A different engine cold hits the same IP-reputation gate. Only after the proxy retry also fails may a second engine be tried.
 
 Before ANY tool-call omission response, the following must be true:
 1. The tool implied by the hedge has been attempted in the same turn
@@ -54,6 +55,7 @@ stop, call the tool, and replace the hedge with the result.
 | See images the user sent | `ls -t state/photos/ \| head -5` then Read the file |
 | Browse a webpage | `mcp__shadow__browse_url` — NOT WebFetch |
 | Search the web | `mcp__shadow__web_search` — NOT WebSearch |
+| First search returned CAPTCHA/block/403/429 | Retry the SAME query via home-proxy first; do NOT switch to a cold second engine (same IP-reputation gate) |
 | Find Telegram context | Check `state/recent_context.json`, `state/research_log.json`, `state/history.json` |
 | Read tweets / X posts | `mcp__shadow__browse_url` with the x.com URL |
 | Infra component "not wired"/missing/unconfigured (tunnel, service, daemon) | Run the status command first and paste output (`wg show`, `systemctl status <unit>`, `ip a`, `ss -lntp`); the blocker claim is only valid if the command confirms it |
