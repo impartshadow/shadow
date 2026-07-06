@@ -531,3 +531,19 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 | Recovery | Auto-rewrite is the recovery for normal cases; structural-drift case forces regeneration with canonical MCP names. |
 | Companion | `web-tool-rewriter` (pre-check) still covers actual tool dispatch \u2014 a different surface. |
 
+### FM-017 (routing layer): SensitiveWriteRouter
+
+**Symptom**: Model attempts Write/Edit against a sensitive path (system dir, credential file, or raw state/ JSON) and the existing `dangerous-path-guard` blocks without naming the canonical mechanism, so the next turn regenerates the same wrong write.
+
+**Detection**: `sensitive-write-router` classifies the canonicalized `file_path` into three buckets in order:
+  - Bucket A (SYSTEM_DESTRUCTIVE): `/etc/`, `/usr/`, `/var/`, `/bin/`, `/sbin/`, `/boot/`, `/root/`, `/sys/`, `/proc/`, home dotfiles (`.bashrc`, `.zshrc`, `.ssh/*`, `.aws/credentials`, `.docker/config.json`, `.kube/*`), or any path outside `/home/agentshadow/shadow/` that is not `/tmp/` or a tool-owned home dir (`~/.claude/`, `~/.codex/`, `~/.config/`, `~/.local/`, `~/.npm-global/`, `~/.cache/`).
+  - Bucket B (CREDENTIAL): basename matches `\.env$`, `\.env\.[a-z]+$`, `credentials?\.json$`, `.*[_-]tokens?\.(json|txt)$`, `.*[_-]secrets?\.(json|txt)$`, or `.*_api_key\.txt$`. Carve-outs: `moltbook_api_key.txt`, `.env.example`, `.env.sample`, anything under `tests/`, `docs/`, `state/staged_writes/`, or a file already touched this session.
+  - Bucket C (STATE_JSON_DIRECT): `Write` (not `Edit`) on `state/**/*.json(l)` where the caller is not `core/state_io.py`.
+
+**Enforcement**: `check_pre` blocks the tool dispatch with a bucket-specific recovery message naming the canonical mechanism (`bw_save.py` / `Edit` on `.env` / `core.state_io.write_json`).
+
+**Recovery**: See `harness/contracts/sensitive_write_router.md`. The recovery text is injected as a `<system-reminder>` so the next turn regenerates against the named canonical mechanism.
+
+**Escalation**: Bucket A with no in-repo alternative surfaces as a Rule 4 blocker (the user-only op).
+
+**Supersedes-not-replaces**: `dangerous-path-guard` remains active as the block-only layer until this contract has 30 days of production without incident.
