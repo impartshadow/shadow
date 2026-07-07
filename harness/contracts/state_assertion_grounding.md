@@ -60,7 +60,10 @@ context, not a live read."
 ## Deliberate blind spot
 The contract cannot catch *read-the-wrong-source* — a turn that reads Gmail
 when it should read Discord, or reads a stale cache when the live source
-diverges. It catches assert-from-memory only. The check is `warn`, not
+diverges. It catches assert-from-memory only. (The stale-cache half of this
+blind spot is now covered for state files by `dead-source-citation-guard`,
+added 2026-07-07 after the echo_post_log incident; see
+`dead_source_citation.md`.) The check is `warn`, not
 `block`, because a definitive state claim with no backing read is *suspect*,
 not *proven wrong*; blocking would false-positive on answers the user legitimately
 provided in the conversation context one or two turns earlier.

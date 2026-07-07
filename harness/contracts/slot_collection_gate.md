@@ -9,7 +9,7 @@ Fires before any tool call that performs a write action on an external system:
 - `mcp__claude_ai_Google_Calendar__create_event`
 - `mcp__claude_ai_Google_Calendar__update_event`
 - `mcp__claude_ai_Gmail__create_draft` (when `send=true` or follow-on send tool fires)
-- Echo publish calls (`echo/crosspost.py`, Mastodon post, Nostr post)
+- Echo publish calls (`scripts/echo_publish.py`, `echo/twitter.py`, browser X post)
 
 ## Precondition
 All required slots for the target action must be present in `ctx.tool_params` for the pending tool call. Missing or empty slots block execution.
