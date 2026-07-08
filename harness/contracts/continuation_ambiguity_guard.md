@@ -62,3 +62,10 @@ than blanket-suppressing.
 - CLAUDE.md Rule 39 — start receipts for in-flight work; if you have a
   legitimate background task, post `⏳ <task> · started · eta <when>` and
   the runtime footer will track it (then the continuation framing is OK).
+  Trigger phrasings that MUST emit the `⏳` line in the same turn (before
+  any tool work): "keep working on X", "start working on X / down [the
+  list]", "run Y", "go through [these]", "farm out to subagents", or any
+  open-ended question that requires >5 min of investigation. No dedicated
+  async-start-receipt contract exists in code (AsyncStartReceipt retired
+  2026-07-05 as a broken detector — see `core/contracts.py` audit
+  comment); Rule 39 is upstream enforcement only.
