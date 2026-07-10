@@ -92,6 +92,12 @@ specific failure pattern to a Quick Reference rule in CLAUDE.md if it stays
 hot for >3 consecutive days.
 
 ## Recent activity
+2026-07-10 gap-closer window: **6 fires in 4h** (00:58, 00:59, 01:28, 02:36,
+02:37, 02:55) — the promote-trigger from the previous window fired again.
+Generalized Quick Reference rule 55 promoted this pass to close the
+generation-time salience gap on the broader `Yes/No/Confirmed`-shaped
+answer class.
+
 2026-06-27 gap-closer window: **6 fires in 4h, 7 fires in 24h** — the top
 violator in the 4h window. Co-fires with `concurrence-grounding` (sibling
 guard for the assertion-by-the user inverse). Quick Reference rule 50 already
