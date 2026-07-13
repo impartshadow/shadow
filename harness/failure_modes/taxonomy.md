@@ -576,3 +576,24 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 
 **Canonical sources:** `state/revenue.json` ($), `state/echo_tweet_log.json` (Echo posts), `state/research/queue.json` (briefs), `state/substack_subscribers.json` (subs), `state/contract_violations.jsonl` (violations), `state/credential_guardian_state.json` (deficiencies), `state/bot_restart_log.jsonl` (restarts), `git log` (code shipments).
 
+### FM-011 sub-mode: stubbed-artifact
+
+**Pattern:** Response uses completion-tense framing (`✅`, `done`, `implemented`, `fixed`, `added`, `shipped`, `landed`, `complete`) while a `Write`/`Edit`/`NotebookEdit` from the same turn authored content containing deferral markers (`TODO`, `FIXME`, `raise NotImplementedError`, `pass # todo/stub`, `<INSERT ...>`, `[FILL_IN]`, bracketed placeholders, `...  # fill`).
+
+**Why it's a deferral:** the receipt claims the artifact is finished, but the file the user opens contains newly-introduced stubs Shadow wrote this turn. Same family as premature `done` (rule 30) and fabricated commit hashes (rule 29) — the completion claim is not backed by the artifact.
+
+**Enforcement:** `stubbed-artifact-guard` (post-check, block). Inspects the raw `content`/`new_string`/`new_source` argument from each write-class tool call, matched against a strict marker set with path allowlist (`core/contracts.py`, `harness/**`, `tests/**`, `memory/**`, failure-museum/autopsy docs) and content-context suppression (regex-pattern definitions, `assert not TODO` assertions, prose `.md` outside code fences). Disabled entirely when the response uses `⏳` / `blocker:` / `wip` / `stub for` / `sentinel` framing — that framing declares the deferral honestly.
+
+**Recovery:** either (a) complete the stub in-turn and re-issue the receipt, or (b) reframe as `⏳ <op> · step complete · <what landed> · blocker: <concrete reason>`.
+
+### FM-026 — Unverified credibility claim in outbound payload
+
+**Contract:** `revenue-claim-evidence-gate` (replaces `memory-draft-verification-gate`)
+**Type:** `check_pre` (remediation — blocks the outbound tool call)
+**Trigger:** Any outbound tool call (Discord/Moltbook post, Substack/Echo/Gmail/Twitter publish shell, draft-directory Write/Edit, Substack Studio POST) whose payload contains a revenue ($N/mo, MRR, ARR), rank (top-N Claude Code/Anthropic/operator, #N), token-volume (~NB tokens / N weeks), or verified-label (`verifiable`, `Anthropic-verified`) claim.
+**Enforcement:** Class-level compiled regex extracts the claim span and type; `tool_call_results` for the current turn are walked newest→oldest for a matching grounding source per the Claim→Source Map (revenue → `state/revenue.json` or Stripe API/CLI; rank → `state/echo_leaderboard.json`; token_volume → `state/claude_usage_snapshot.json` / `state/claude_cost_log.jsonl`). `verified_label` never auto-clears — requires an inline qualifier. Qualifier bypass: `(unverified)`, `(from training data — unverified)`, `(internal leaderboard)`, `(self-reported)`, `(estimated)` within 40 chars downgrades block → warn. Mirror-backs of the user's own claim downgrade to warn (not skip) so audit still logs.
+**Recovery:** Injected failure text names the exact source file to Read (or Stripe script to run) and the qualifier syntax to append; next model turn is deterministically constrained to ground-or-qualify before retrying the same payload.
+**Skips:** Writes to `state/revenue.json` / `state/stripe_*.json` / `state/claude_*.json` (source of truth cannot self-block), writes under `memory/` (covered by `memory-write-guard`), destinations in `#shadow-log` (audit surface).
+**Historical incident:** 2026-06-22 — `verifiable top-5 Claude Code user, ~20B tokens / 12 weeks` lifted from `memory/user_epic_ai_role.md` into `drafts/governance_failure_modes.md` as the central credibility anchor; the user had to ask "What are you basing the one of the most highest volume?" before the internal-leaderboard source was disclosed. The prior `MemoryDraftVerificationGate` covered draft writes only; the widened trigger surface here catches the same claim family across Discord/Substack/Gmail/Twitter and Bash publish paths as well.
+**Retires:** `memory-draft-verification-gate` (strict subset of triggers).
+
