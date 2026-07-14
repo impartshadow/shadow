@@ -75,3 +75,10 @@ and true hallucinations ("frobnicator loop") which must still fire.
   false-positive bucket: "QA stamps to loop", "entry to every loop",
   "the whole posting loop", "entries from each loop". 4 regression
   tests added.
+- 2026-07-13 (gap-closer): Added "gates" (verb/plural of "gate", 2026-07-06
+  addition) to `_COMMON_WORDS`, and added `_PARTICIPLE_COMPOUND_RE` to skip
+  participle-descriptor compounds (`X-gated`, `X-driven`, `X-controlled`,
+  `X-based`, `X-triggered`, `X-scoped`, `X-shaped`, `X-backed`, `X-powered`,
+  `X-bound`, `X-paced`, `X-timed`, `X-keyed`). Both fired as FPs in the 4h
+  window (2026-07-13 11:37 "that gates loop" + 11:38 "The receipt-gated loop").
+  4 regression tests added.

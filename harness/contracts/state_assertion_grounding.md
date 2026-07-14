@@ -84,6 +84,19 @@ content, prefix the assertion with the source so the user can audit
 - `stale-state-assertion-guard` extends this for live-process / runtime claims
   ("X isn't running", "Y was already deleted"); see CLAUDE.md Quick Reference
   rule #37(a).
+- `activity-assertion-grounding` (sibling, added 2026-07-14 after the
+  autonomous-shutdown incident) covers a distinct sub-case: definitive answers
+  to *live-activity* questions ("anything else ship?", "did we consume quota?",
+  "is anything still running?") where the only tool that ran was a git-history
+  tool. Git tools answer "what committed", not "what's running or consuming
+  quota"; this guard passes with any read, so an activity question with a
+  git-log-only response satisfies it but not the sibling. Warn severity.
+  Origin: 2026-07-13 evening — Shadow answered "No, X was the last shipment"
+  to "Anything else ship?" from `git log` alone while a Claude run was in fact
+  actively editing execution-snapshot files and consuming the 5-hour quota
+  window past the declared 7pm cutoff. The response even acknowledged
+  "unfinished local work on execution snapshots" but did not investigate its
+  source. See `core/contracts.py:ActivityAssertionGroundingGuard`.
 
 ## Escalation
 Warn-only — no auto-block, no the user surface. Repeated fires across sessions

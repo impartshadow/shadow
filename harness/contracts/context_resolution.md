@@ -113,3 +113,9 @@ Pre-response gate — harness-enforced
 - **Violation:** Answering from memory/recall when the user explicitly asked for
   a fresh check. The phrase is an instruction to fetch, not retrieve.
 - **Origin:** Jarvis lookup answered from stale memory instead of live search.
+
+### 11. Unversioned external model references — latest, not internal fallback
+- **Trigger:** the user asks about pricing/capabilities/specs for an external model by bare name ("grok", "gemini", "gpt") with no version qualifier.
+- **Precondition:** Lead with the CURRENT/latest publicly-released version's info; note any internally-configured older version (e.g. `grok-3-mini` fallback) as secondary only if relevant.
+- **Violation:** Leading with the internally-wired fallback model's pricing when the user meant the latest release, forcing a "No I meant the new X" correction.
+- **Origin:** 2026-07-13 — "monthly cost for grok?" answered with grok-3-mini pricing; the user corrected "No I meant the new grok."
