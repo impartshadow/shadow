@@ -382,6 +382,17 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Recovery:** Rewrite outbound content without the identifier — role-based references only, principal stays unnamed.
 **Origin:** 2026-04-18 live incident — Shadow's outbound_scout was about to cold-email strangers from [public-contact-email] with "I'm an AI agent built by [full name] in [city]" baked into the Haiku prompt. the user: "You were going to send my info out of our two-way conversation into the world." First-pass shipped a response-text guard; the user corrected the framing — response_text is inbounds-equivalent, check_pre on outbound tools is the whole point.
 
+### FM-022 — Capability scope assertion guard (supplementary)
+
+| Field | Value |
+|---|---|
+| **Contract** | `capability-scope-assertion-guard` |
+| **Pattern** | Shadow asserts whether a tenant/business capability (Square, Stripe, Gmail, Calendar, etc.) is/isn't wired, exists, or is live, having checked only one file |
+| **Root cause** | Capabilities can have parallel implementations — a standalone cron script and a separate adapter-registry entry solving different halves of the same problem. A single-file Read only sees one half. |
+| **Detection** | `core/contracts.py:CapabilityScopeAssertionGuard` (warn, post-check) — fires on a capability-wiring assertion phrase unless the turn's tool calls show `scripts/capability_audit.py` or a scan spanning ≥2 of `core/`, `scripts/`, `echo/`, `state/` |
+| **Recovery** | Run `python3 scripts/capability_audit.py <keyword>` before answering "is X wired" questions |
+| **Origin** | 2026-07-15 #tenant-ops — "no Square connector exists" (from reading only `core/tenant_tools.py`) contradicted the live `scripts/paul_square_order_sync.py` + `core/square_client.py`, shipped 2026-07-03. the user: "This should be a you problem" — structural fix over a reminder. |
+
 ### FM-012 — Manual instruction guard (supplementary)
 
 | Field | Value |
@@ -596,4 +607,46 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Skips:** Writes to `state/revenue.json` / `state/stripe_*.json` / `state/claude_*.json` (source of truth cannot self-block), writes under `memory/` (covered by `memory-write-guard`), destinations in `#shadow-log` (audit surface).
 **Historical incident:** 2026-06-22 — `verifiable top-5 Claude Code user, ~20B tokens / 12 weeks` lifted from `memory/user_epic_ai_role.md` into `drafts/governance_failure_modes.md` as the central credibility anchor; the user had to ask "What are you basing the one of the most highest volume?" before the internal-leaderboard source was disclosed. The prior `MemoryDraftVerificationGate` covered draft writes only; the widened trigger surface here catches the same claim family across Discord/Substack/Gmail/Twitter and Bash publish paths as well.
 **Retires:** `memory-draft-verification-gate` (strict subset of triggers).
+
+### FM-012.a: Malformed platform-action dispatch (subclass of FM-012)
+
+**Parent:** FM-012 (Manual instruction to the user where automated action is available)
+
+**Mechanism:** A platform-action tool call (Gmail send, Discord post, Moltbook post, Calendar create, Substack/Echo publish, Telegram send) is dispatched with missing, empty, whitespace-only, placeholder-token, or unresolved-template-marker parameters. When the malformed call fails or produces a nonsense artifact, Shadow falls back to natural-language instructions for the user ("open Gmail and paste the following…") — which is the FM-011 action-deferral pattern layered on top of the original malformed dispatch.
+
+**Detection:** `PlatformActionParamSchemaGuard` (pre-check, block) — resolves the tool call to a modality, applies a per-modality required-field schema (RFC-5322 for Gmail `to`, ISO-8601 for Calendar `start`, known-channel registry for Discord `channel`, minimum body/title lengths for publish flows), and applies structural rejects (empty, whitespace, placeholder tokens `<TODO>`/`TBD`/`XXX`/`None`/`null`/`undefined`, unresolved `{{...}}` or short-value `{word}` format markers). Recipient-shaped fields (`to`, `chat_id`, `channel`) resolve against the tenant/channel registry — unknown recipient quotes the offending value in the violation message.
+
+**Recovery:** The `check_pre` hook raises `ContractViolation` before dispatch. Retry the call with the field populated to a valid value; the recovery message names the exact failed schema rule (`required-non-empty`, `placeholder-token`, `template-marker-unresolved`, `invalid-rfc5322`, `invalid-iso8601`, `unknown-recipient`, `min-length-N`, `invalid-sender-personal`) so generation has a concrete target. If the required field is genuinely unknown, run the lookup tool that resolves it (Bitwarden for creds, tenant registry for chat_id) rather than paraphrasing the call into instructions for the user.
+
+**False positive mitigations:**
+- `--dry-run` flag or `SHADOW_DRY_RUN=1` env var downgrades to warn (pipeline exercise without payload).
+- `--allow-incomplete` flag on Gmail draft/reply subcommands downgrades to warn (multi-stage compose staging). Never accepted on `send`.
+- Format-marker check bounded to values <200 chars — long-form prose that legitimately contains `{word}` tokens is not blocked.
+- Script matching requires argv[0] to be `python[3]` + script or the script itself — `grep gmail_manage.py` / `Read scripts/gmail_manage.py` do not trigger.
+
+**Explicit non-scope:** The wrong-modality-emission subclass of FM-012 (Shadow emits UI instructions without ever attempting a tool call) is handled by a separate text-side post-check contract (`PlatformInstructionEmissionGuard`, proposed separately). Splitting mechanisms rather than bolting text detection onto this schema gate keeps the false-positive profiles tunable independently.
+
+### FM-029: Factual claim without verification
+
+**Enforcers:** `claim-evidence-binding-guard`, `verification-vocabulary-gate` (added 2026-07-15 — covers bare `verified`/`confirmed`/`validated`/`checked <obj>` assertions in response text without same-turn provenance).
+
+**Symptom:** Response text asserts a factual outcome using verification-vocabulary (`Verified.`, `Confirmed the counter is at 12`, `Validated the config`) without any inline citation, file path, commit hash, URL, hedge, or same-turn tool call to ground the claim.
+
+**Detection (verification-vocabulary sub-check):** Scan `response_text` for whole-word matches of `verified|confirmed|validated` (case-insensitive) and `checked <object-noun>` in assertive position (skip negations, questions, quoted content, code fences, and product-name whitelist e.g. `Twitter Verified`, `verified badge`). For each hit, require at least one provenance signal in the same or preceding sentence: (a) inline bracket citation `[source: ...]`, (b) file path token, (c) commit hash / URL / pytest fragment / code fence, (d) a same-turn tool call in the transcript to Read/Grep/Bash/browse_url/web_search, or (e) an explicit hedge (`unverified`, `appears`, `probably`, `I think`).
+
+**Recovery:** Retry with correction naming the exact matched token; require rewrite with citation OR hedge before completion.
+
+**Severity:** block with retry.
+
+### FM-025 — Ungrounded Definitive Assertion
+
+**Failure**: Response contains a definitive-tense claim about repo/state/capability whose truth requires a ground-truth read that did not happen in the same turn. Distinct from FM-022 (self-consistency = personality/prior-decision contradictions) — FM-025 is the generation-without-verification family spanning Quick Reference rules 3, 29, 30, 37a, 41, 42, 50, 55, 57.
+
+**Detection layer** (warn-only): `capability-scope-assertion-guard`, `state-assertion-grounding`, `loop-name-validation-guard`, `activity-assertion-grounding`.
+
+**Remediation layer** (block, pre-send): `definitive-state-assertion-gate` — two-stage matcher (Stage A regex extracts a named referent; Stage B verifies a same-turn tool call grounds it) with hedge exemption. Rate-limited to 3 forced re-drafts per referent per session.
+
+**Recovery**: Run the tool call named in the recovery message (capability_audit.py, grep, pgrep, Read of the canonical state file) BEFORE re-drafting. If truly uncheckable, add an inline hedge (`(unverified)`, `I think`, `probably`) — do not assert.
+
+**Origin**: 2026-07-15 #tenant-ops — Shadow told the user "no Square connector exists" after reading only `core/tenant_tools.py`; a parallel implementation (`scripts/paul_square_order_sync.py` + `core/square_client.py`) had been live since 2026-07-03. The four existing warn-only guards had been firing 6+ times per 4h window without preventing the ship, because warn fires *after* the response reaches the user.
 
