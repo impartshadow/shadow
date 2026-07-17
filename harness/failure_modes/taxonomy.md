@@ -650,3 +650,19 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 
 **Origin**: 2026-07-15 #tenant-ops — Shadow told the user "no Square connector exists" after reading only `core/tenant_tools.py`; a parallel implementation (`scripts/paul_square_order_sync.py` + `core/square_client.py`) had been live since 2026-07-03. The four existing warn-only guards had been firing 6+ times per 4h window without preventing the ship, because warn fires *after* the response reaches the user.
 
+### FM-013: Scope mismatch — response covers a subset of the resolved ask
+
+**Description:** The user turn contains multiple asks (either explicitly enumerated, or resolved from a quoted/replied-to parent message via a resolver token like `this`/`these`/`them`), and Shadow's response addresses only a subset — silently dropping the remaining slots without executing or explicitly deferring them.
+
+**Sub-codes:**
+- **FM-013a: referent-drop** — Resolver token (`this`, `these`, `handle these`, `clean this up`) present in the user turn but the response was generated without expanding the referent against the Discord `referenced_message` / Telegram `reply_to_message` / inline quote / recent assistant turns. The response answers a phantom scope, not the actual scope.
+- **FM-013b: slot-drop** — Referent successfully resolved (or scope was explicit from the start), but the response covers only a subset of the atomic asks and does not explicitly defer the remainder with `slot [N] blocked: <reason>`.
+
+**Enforcement:** `ScopeCoverageGuard` (pre+post). Pre-hook resolves referents, decomposes the scope into slots (structural markers → verb enumeration → Haiku fallback capped at 200 output tokens), and stores them on `ContractContext.action_params["scope_slots"]`. Post-hook computes lemma overlap per slot and, on any drop, blocks the response and injects a bounded single-retry directive naming the uncovered slots explicitly. If the retry still drops a slot, downgrades to warn and logs to `state/contract_violations.jsonl` for pattern analysis.
+
+**Trigger conditions (any of):** (1) 2+ structural asks in the turn; (2) resolver token present; (3) Discord/Telegram reply or inline `>` quoted block; (4) turn <60 chars with a resolver token (short-form ambiguity).
+
+**Recovery:** Retry the response with every uncovered slot named, either executed or explicitly deferred. If the referent cannot be bound to any thread source, open with a one-line disambiguation restatement per rule 51.
+
+**Recent examples:** `clean this up` against a 2-item Discord status list producing a response covering only item 1; `handle these` against a 4-bullet Telegram reply covering 2 bullets.
+
