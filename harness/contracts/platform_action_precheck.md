@@ -2,7 +2,10 @@
 
 ## Type
 **Code-enforced pre + post check** — `PlatformActionPreCheck` in `core/contracts.py` (FM-012).
-Pre-check is warn-only (steering signal). Post-check is `block` severity.
+Pre-check is `info` severity (advisory steering signal; trajectory event fires
+for learning, but ledger write is suppressed so pre-check fires don't inflate
+the ≥2/4h recurrence thresholds used by the gap-closer + intraday alarms).
+Post-check is `block` severity — this is the actual UI-instruction gate.
 
 ## Trigger
 **Pre-check:** Fires when the user message references a platform Shadow has tool access to.

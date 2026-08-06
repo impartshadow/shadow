@@ -1,0 +1,44 @@
+# Grandfathered orphan contract docs.
+#
+# Each line names a harness/contracts/*.md doc that has no matching Contract
+# class in core/contracts.py AND no runtime code file cited in its body. New
+# docs MUST NOT be added here — they should either add a Contract subclass or
+# cite the enforcing module (core/*.py, scripts/*.py, echo/*.py, tests/*.py,
+# harness/skills/*.md) in the doc body so tests/test_contract_sync.py can
+# verify the enforcement path.
+#
+# The list is expected to shrink, never grow. See
+# tests/test_contract_sync.py::test_no_orphaned_docs for the enforcement gate.
+# Origin: reflect repair 2026-07-24 (masquerade recurrence on ca0180db-style
+# Markdown-only contract adds).
+agent_native_shipping_gate.md
+blocker_reframe.md
+browse_url_fallback.md
+capability_mismatch_recover.md
+decision_verification.md
+digest_channel_routing.md
+discipline_verification.md
+draft_critic_gate.md
+emi_clarification.md
+episodic_capture_gate.md
+epistemic_source_mismatch.md
+generative_output_persistence.md
+ghost_profile_pre_check.md
+handoff_signal_weighting.md
+interface_representation_gap.md
+interrupt_boundary_isolation.md
+knowledge_first_gate.md
+loop_budget_gate.md
+memory_confidence_scoring.md
+memory_consolidation_gate.md
+memory_freshness.md
+memory_importance_weighting.md
+novel_task_gate.md
+research_verification.md
+retrieval_use_gap.md
+session_handoff_append.md
+session_mood_vector.md
+source_authority_hierarchy.md
+subtask_threshold_guard.md
+tool_call_transparency.md
+tool_chain_provenance.md

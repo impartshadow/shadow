@@ -666,3 +666,202 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 
 **Recent examples:** `clean this up` against a 2-item Discord status list producing a response covering only item 1; `handle these` against a 4-bullet Telegram reply covering 2 bullets.
 
+### FM-011.b — Pre-emit action deferral (shape detection)
+
+**Parent:** FM-011 (action deferral — proposing/describing instead of executing)
+
+**Enforced by:** `action-deferral-pre-emit-guard` (`core/contracts.py`)
+
+**Trigger:** Post-response-assembly, before user emission. Fires when a the user-directed task turn produces a draft that (a) contains a future-tense reference to work the current turn should complete, (b) emits a receipt with an unresolvable citation (bad commit hash, missing path, placeholder msg-id), or (c) leaves TODO/placeholder residue — AND no state-changing tool call was executed in the same turn.
+
+**Detection:** Two-stage — deterministic Stage 1 regex catches candidate shapes (A: future-tense + work-verb window; B: receipt tokens with unresolvable citations; C: bare placeholder tokens), Stage 2 Haiku judgment filters Shape A/C false positives. Shape B is fully deterministic (skips Stage 2) because `git cat-file` / `os.path.exists` are ground truth.
+
+**Recovery:** Block with a recovery message that (1) names the specific deferred work, (2) names the concrete tool call that should replace it, (3) offers the rule-58 partial-receipt escape hatch (`partial: <landed> \u00b7 blocker: <gate>`) when the work truly cannot land this turn.
+
+**Distinct from:**
+- `behavioral-haiku-guard` (FM-011/012/013/019) — this guard fires earlier in the pipeline and is scoped to deferral only, not the full bundle.
+- `self-verification` — Shape C token match preserved as belt-and-braces; this guard adds the shape-first detector for future-tense and receipt-shaped deferrals that pure token-scan misses.
+- Rule-58 rollup claims — routed to `capability-scope-assertion-guard`, out of scope here.
+
+**Escape hatch:** Rule-58 partial-completion receipts (`partial: <landed> \u00b7 pending|blocker: <gate>`) are whitelisted at Stage 1.
+
+### FM-013b — Multi-slot dropped-ask
+
+Assistant answers a subset of the discrete asks in a multi-slot user message, silently dropping one or more. Distinct from FM-013 (scope overrun) because the failure is *under*-coverage, not over. Distinct from FM-011 (deferral) because the drop is silent, not acknowledged.
+
+**Enforced by:** `MultiSlotCoverageGate` (`core/contracts.py`). Deterministic suspicion filter triggers a Haiku slot enumeration (cached in `state/multi_slot_cache.jsonl` and on `ContractContext.multi_slot_enum`) during `check_pre`; `check_post` invokes a second Haiku judgment across the finalized `response_text` + `tool_call_results` and blocks with an anchored regeneration message on any `not_covered` slot. `deferred_with_reason` passes so honest blockers are not punished.
+
+**Recovery:** regeneration prompt quotes the exact missed span and requires the next response to address it or explicitly defer with a named reason.
+
+### FM-029 sub-check: verification-preamble-primer
+
+**Contract**: `verification-preamble-primer` (pre-check advisory + post subject-match warn)
+**Extends**: FM-029 `verification-vocabulary-gate` / `claim-evidence-binding-guard` (no new failure mode)
+
+**What it catches**: Verification-shaped questions from the user (`did you verify X?`, `is Y live?`, `how many Z?`) where Shadow is about to emit a verification verb (`verified`, `confirmed`, `shipped`, `live`, `running`, etc.) without a same-turn tool call whose payload mentions the claim's subject. The primer's pre-check injects a grounded verb-to-citation preamble into `ContractContext.anticipation_preamble` BEFORE generation, breaking the regeneration loop that FM-029's post-gates alone cannot converge. The post-check runs a subject-match backstop: for each verification verb hit, it extracts a ±10-token noun-phrase and checks at least one `tool_call_results` entry contains a content-word overlap. Coordinates with sibling FM-029 gates via `ctx._fm029_verdicts` marker to prevent double-verdicts.
+
+**Scoping**: FM-029 owns verification-verb claims regardless of question shape; FM-025 (`state-assertion-grounding`) owns Yes/No-shaped answers regardless of verb choice. The primer's trigger is broader than FM-029's current scope (adds question-shape signals) but its verdict-space stays strictly within FM-029.
+
+**False-positive mitigations**: rhetorical markers (`just curious`, `no rush`, `hypothetically`), meta-conversation about the gate itself (`FM-029`, `rule 55`, `the contract`), quoted/fenced regions excluded from verb scan, autonomous passes excluded by action-class filter, empty subject extraction falls through to sibling gate.
+
+**Severity**: pre-check advisory (never blocks); post-check warn (escalates to block only via existing `RecurrenceEscalator` when ≥2 prior FM-029 fires in same 4h window).
+
+**Origin**: Convergence of failure class instantiated by Rules 3, 29, 30, 41, 42, 50, 55, 58 — "generation-without-verification." Moves enforcement from post-hoc regex to pre-generation priming, which is the only stage that can prevent the token from being emitted.
+
+### FM-025: Ungrounded artifact existence claim (ArtifactExistenceGroundingGate)
+
+**Symptom**: Shadow narrates that one of its own artifacts (receipt, reply, send, draft, commit, subscriber, customer, record, entry, row, file, thread, log) does or does not exist, without having read the relevant state file in the same turn. Fragments seen in the wild: `"no paying-customer receipt either"`, `"there's no corresponding reply"`, `"the existing one must have a receipt"`, `"already sent"`, `"no send receipt in the log"`.
+
+**Root cause**: Shadow treats memory of what state contained last turn (or last hour) as sufficient grounding for a definitive-tense assertion. FM-025 sits in the same family as FM-003 (verification citation), FM-027 (rollup completion), and FM-024 (definitive Yes/No answers) — the shared failure is generation-without-verification of Shadow's own artifacts.
+
+**Enforcement**: `artifact-existence-grounding-gate` (`core/contracts.py`). Post-check on assistant responses. Sentence-scoped regex over two predicate families (NEGATION + AFFIRMATION) keyed to a fixed Shadow-artifact noun list. Fires when zero grounding tool calls (`Read`, `Grep`, `Glob`, `browse_url`, `web_search`, `list_async_tasks`, `TaskOutput`, `mcp__shadow__*`, or Bash whose command hits a canonical state-path hint and is not a pure mutation) ran in the same turn. Suppressed by hedge tokens (`I think`, `unverified`, `pending verification`), explicit source citation (`per your HH:MM ...`, `per state/... shows`), question form, or third-party subject prefix.
+
+**Severity**: block.
+
+**Recovery**: Regenerate after running the canonical reader for the artifact class (sends -> `scripts/gmail_manage.py list sent`; paying customers -> `state/revenue.json`; replies -> `mcp__shadow__discord_history` or telegram log; commits/drafts -> `git log` + `state/research/queue.json` + `state/echo_tweet_log.json`; records/rows -> `Read`/`Grep` of the relevant `state/` file), OR hedge the claim explicitly, OR cite the prior-turn source in-line.
+
+**Related**: FM-003 (verify-before-push), FM-024 (definitive-state-assertion-gate), FM-027 (multi-day rollup completion), FM-022 (self-consistency).
+
+### FM-024 — Instruction propagation without provenance (pre-write gate)
+
+**Symptom**: Routing/policy statements ("Reminders always go to Todoist", "Bitwarden is self-service") land in `memory/` files without grounding markers — no absolute date, no quoted the user text, no backlog reference, no **Why:** / **How to apply:** structure. Rules that belong in `harness/contracts/` or `CLAUDE.md` end up as loose prose in memory, where they are neither enforced nor audit-able.
+
+**Root cause**: Memory writes accept any string. The auto-memory spec mandates a structural form (**Why:** / **How to apply:** for `feedback`/`project`) and provenance grounding, but nothing gated the write itself.
+
+**Enforcement**: `memory-instruction-routing-gate` (pre-check on Write/Edit against `memory/**/*.md`) blocks writes whose delta contains imperative or declarative-rule-shaped sentences lacking grounding markers within 20 lines, or containing enforcement vocabulary + system nouns (which route to harness/ regardless of grounding). `propguard-provenance-detector` (post-check, warn) retained as backstop for edits that slip through.
+
+**Recovery**: Add grounding in the same file (date, quoted the user, backlog ref, **Why:** structure) or route to `harness/contracts/<name>.md` + `core/contracts.py` (enforced rules) or `CLAUDE.md` Quick Reference (high-frequency the user-facing).
+
+### FM-023 · gmail-sender-identity-guard
+
+**Failure**: Outbound Gmail send is constructed with the operator's personal address in the sender/from slot. That address is the user's personal inbox and is never a valid sender for any Shadow send; business sends must originate from the business account. The literal token lives once, in `core/contracts.py:GmailSenderIdentityGuard._PERSONAL_TOKEN`; this entry references it by role so the identifier does not spread.
+
+**Contract**: `GmailSenderIdentityGuard` (block, both `check_pre` runtime and static AST on `git_commit`/`git_push`).
+
+**Detection primitives**:
+1. Sender-slot kwarg (`from_addr=`, `sender=`, `from_=`, `userId=`) bound to a literal containing the personal token.
+2. `From`/`Sender`/`Reply-To` header assignment or dict-literal to a value containing the personal token.
+3. Shell/subprocess argv matching `--from <personal>` or `gmail_manage.py send … --from <personal>`.
+4. Tool-argument scan: any tool call whose serialized args include a send verb (`send`/`draft`/`MIMEText`/`messages/send`) co-occurring with a sender-slot binding of the personal token.
+
+**Not flagged**: recipient forms (`--to <personal>`, `to=<personal>`), inbox reads (`gmail_summary.py <personal>`), `list sent`, doc/markdown/comment mentions, `tests/fixtures/**`, or any file/line carrying `# noqa: GmailSenderIdentityGuard`.
+
+**Recovery**: Replace the sender with the business account; if the intent was to email the user, keep his address in the `to=` slot. Recovery message is prepended to the next system turn.
+
+**Related**: extends `dox-guard` (FM-023). The prior `raw-gmail-send-guard` keyed on transport (smtplib/HTTP endpoint) and missed identity-based violations; this guard keys on sender identity in a send-slot, invariant across transports.
+
+### FM-004 · portfolio-source-write-guard
+
+**Failure**: `state/business_theme_portfolio.json` (the portfolio authority) is written directly with `update_json` / `save_json` / `write_text` / `json.dump` instead of `core.portfolio_store.update_portfolio_source`. The generated projection `state/business_theme_allocations.json` keeps the prior `source_hash`, so every consumer's `validate_projection` call fails closed.
+
+**Contract**: `PortfolioSourceWriteGuard` (block, `check_pre`).
+
+**Why it is an outage, not a drift**: consumers fail closed on hash mismatch. The 2026-07-28 Daily Moonshot died on `portfolio projection is stale; run scripts/business_theme_allocator.py` after the source was mutated without rerunning the allocator.
+
+**Detection**: all four must hold in the written content — (1) path is not `core/portfolio_store.py`, `tests/`, or `test_`; (2) content does not already call `update_portfolio_source`; (3) content references `business_theme_portfolio.json`; (4) content contains a raw write call. Requiring the filename *and* a write call together is what keeps doc mentions and read-only references from firing.
+
+**Recovery**: `update_portfolio_source(path, mutate, default=...)` — it binds the source mutation to `refresh_projection()` in one step.
+
+**Defense in depth**: the read side self-heals separately — `load_portfolio_projection` regenerates and re-validates on hash mismatch when both paths are canonical (`core/portfolio_store.py:88`). This guard covers the write side, which the read-side heal cannot reach.
+
+### FM-027 — Receipt hash fabrication (ReceiptHashResolutionGate)
+
+**Symptom:** Assistant posts a receipt line (✅/⏳/❌ · target · hash) citing a commit hash that does not resolve via `git cat-file -e`. Hash was generated from model distribution, not pasted from `git rev-parse HEAD` output.
+
+**Detection:** `ReceiptHashResolutionGate` (post-check, block). Scans response for receipt-line and labeled-hash patterns; for each 7-40 char mixed-alnum hex token, runs `git cat-file -e <hash>`. Non-zero exit = violation. Excludes code fences, Gmail Message-IDs, SHA256, UUIDs, and hashes previously pasted by the user or returned in tool output.
+
+**Recovery:** Retry prompt receives explicit instruction to run `git -C <repo_root> rev-parse HEAD` and paste the 40-char stdout verbatim. If the push has not yet run, run the push first, then rev-parse.
+
+**Related contracts:** `commit-hash-verification` (warn-only predecessor, superseded for receipt lines), `unbuilt-guarantee-guard`, `platform-message-id-claim-guard`.
+
+**Origin:** Rule 29 (commit hashes must be literal `git rev-parse HEAD` output). Documented short-hash fabrications: `28404c9`, `7e040ed`, `b8ea668` (2026-06-14 Coinbase CDP / Shadow Kit sessions).
+
+**False-positive boundary:** 16-char Gmail message IDs (`19fa395c...`, `19fa4905...`, `19fa6ba7...`) are legitimate hex tokens, not fabricated hashes. The predecessor `commit-hash-verification` blocked them because its bare-backtick branch fired whenever commit language appeared *anywhere* in a long status report. Two defenses now cover this: line-scoped anchoring on that branch (commit language must share the token's line) and the `gmail`/`message-id`/`msg_` exclusion keywords in this gate.
+
+A character-proximity window was tried first and failed — it still reached into the following sentence, so "All three landed in the sent folder" below a list of message IDs re-anchored them. Narrowing the vocabulary to git-only terms failed in the other direction, losing the canonical "`deadbee` pushed" catch where the delivery verb is the only anchor. Regression coverage: `test_delivery_verbs_do_not_anchor_gmail_ids`, `test_still_blocks_fabricated_hash_with_git_context`.
+
+### FM-029 · Verification vocabulary without evidence (semantic grounding layer)
+
+**Symptom**: Response contains factual claims (pricing, counts, names, past-tense external state) that read as verified but are not backed by any same-turn tool output or inline citation.
+
+**Examples**:
+- `Opus-5 is $15/M input, $75/M output` with no pricing tool call.
+- `Unsubscribed Seth Godin, Alison MacLellan, Rami from the digest` with no unsubscribe tool output naming those recipients.
+- `Was hitting the 1M-token daily cap` with no ccusage/quota output in the turn.
+
+**Detection**: `ClaimProvenanceGate` (post-check). Stage 1 extracts claim units via regex (numeric-with-unit, assertive verbs, past-tense external state, proper-noun enumerations). Stage 2 asks Haiku whether each unit is grounded in `ctx.tool_call_results` + inline citations. Blocks on any UNGROUNDED or ≥2 PARTIAL verdicts.
+
+**Coexists with**: `verification-vocabulary-gate` (verb-lexicon, cheap lexical), `factual-claim-verification` (token inventory). Lexical gates run first; semantic gate runs when they pass.
+
+**Recovery**: Rewrite directive injected as `<system>` message: run the missing tool call and restate, delete the claim, or hedge explicitly (`from memory \u2014`, `(unverified)`, `approximately`).
+
+**Related rules**: 3, 29, 30, 41, 42, 50, 55, 58, 59.
+
+### FM-005: Restart-resume prompt-injection echo
+
+**Scope**: Runtime scaffolding \u2014 including bracketed context tokens (`[Channel:...]`, `[Executing:...]`, `[Resume context:...]`, `[Restart context:...]`, `[System:...]`, `[Tool:...]`, `[Runtime:...]`), `Resume context:` / `Bot just restarted` preambles, `\u2192 Channel:` routing markers, or paraphrased content from `memory/session_handoff.md` \u2014 is echoed into any outbound-egress payload (Discord, Telegram, email, Substack, X). Covers both direct token leaks and semantic echoes of the harness's own resume prompt.
+
+**Enforced by**:
+- `restart-resume-injection-echo-guard` (egress-layer, semantic-signature superset; pre-check sanitizes in-flight or hard-blocks scaffold-only payloads)
+- `harness-scaffold-egress-guard` (narrow-vocab cover, retained)
+- `cl-channel_shadow_hq_system_bot` (narrow-vocab cover, retained)
+
+**Recovery**: Rewrite the payload as the message the recipient should read \u2014 results and conclusions only, no runtime scaffolding, no handoff echo.
+
+### FM-024: instruction-propagation-without-provenance
+
+**Symptom**: A new CLAUDE.md rule, harness contract doc, or memory file lands with an external-trust claim (numeric benchmark, superlative, third-party quote, product feature assertion) but no `Origin:` line, cited source, or `(unverified)` qualifier. The un-provenanced rule then loads into every future session's context (~14k tokens of CLAUDE.md), where it is treated as ground truth.
+
+**Detection**: `propguard-provenance-detector` (post-write drift observation), `ClaudeMdProvenanceGate` (pre-write block on Edit/Write/NotebookEdit/MultiEdit targeting `CLAUDE.md`, `harness/**/*.md`, `memory/*.md`, `state/behavioral_stops.json`, `state/directives*.json`).
+
+**Enforcement**: `ClaudeMdProvenanceGate` (pre-check block; warn for `memory/*.md` non-index files) + `propguard-provenance-detector` (post-write observation).
+
+**Recovery**: Add `Origin: <YYYY-MM-DD> \u2014 <backlog id | commit hash | state/ path | quoted the user directive>`, add an inline `(unverified)` / `(from memory)` qualifier on the external claim, or run a same-turn `Read`/`Grep`/`Bash` citing the source and re-issue the write. Addenda under an existing rule require their own provenance \u2014 the parent rule's `Origin:` does not carry.
+
+### FM-034: Wrong-sender routing on outbound Gmail
+
+**Symptom:** Bash-invoked Gmail send/draft/reply command routes through `[private-email]` (the user's personal account) as the SENDER instead of `[public-contact-email]` (Shadow's business account). Manifests as `--account [private-handle]`, `GMAIL_ACCOUNT=[private-handle]` env prefix, or credential paths matching `token_personal*.json` on a write verb.
+
+**Root cause:** Sender-account selection is defaulted or copy-pasted from a prior read command (`gmail_summary.py [private-handle]`) into a write command without re-binding the account flag. Existing post-checks (`personal-token-send-guard`, `raw-gmail-send-guard`) log the violation after the send has already fired.
+
+**Enforcement:** `personal-sender-routing-guard` (`check_pre` on `Bash`, severity=block). Pre-check denies the tool call and injects a recovery message naming the exact corrective argv (`--account [public-handle]`). See also FM-023 for personal identifiers in outbound *content* — FM-034 is scoped to sender-account misrouting, FM-023 remains scoped to PII/dox leaks in the message body.
+
+**Recovery:** Re-run with `--account [public-handle]` (or `GMAIL_ACCOUNT=[public-handle]`). For reading the user's inbox, use `scripts/gmail_summary.py [private-handle] …` (read verb, not gated).
+
+### FM-033: Persistent attribution drift ("we built X")
+
+**Class:** Persistent-correction / voice-fidelity family.
+
+**Symptom:** Shadow narrates its own system, code, or operations using first-person plural ("we built", "our harness", "what we've built") despite standing correction that Shadow is the sole builder — there is no team. Recurring at ~6+ hits/week per rule 16.
+
+**Pre-check (prevention):** `we-attribution-preamble-injector` — injects a first-person-singular lexicon constraint into the system suffix before generation. Scope-gated to Shadow-system topics + plural-referent user turns; carves out legitimate joint-referent phrasing ("we agreed", "you and I").
+
+**Post-check (safety net):** `we-built-attribution` — regex-blocks banned verb-anchored tokens if the preamble was bypassed or ignored; forces retry with recovery message.
+
+**Recovery:** rewrite flagged clauses in singular. "We built X" \u2192 "I built X". Shadow is the sole builder.
+
+### FM-029.b — Personal-help domain provenance carve-out
+
+**Parent**: FM-029 (verification vocabulary / uncited claims)
+
+**Symptom**: `ClaimProvenanceGate` blocks correctly-researched personal-help replies (drywall screw sizes, MLS numbers, expediente IDs) because its provenance detector doesn't recognize domain-scoped fetch traces, causing 2-3 turn retry loops on inbound personal-help questions.
+
+**Detection**: `PersonalHelpProvenanceCarveout` (post-check) — inspects same-turn `tool_call_results` for a successful fetch (`browse_url`, `web_search`, `business_lookup.py`) when the inbound user message matches a personal-help domain (home/DIY, real estate, tax, legal/civic, consumer specs, health/nutrition). Also honors explicit hedge tokens (`~`, `(unverified)`, `from memory`, etc.).
+
+**Verdict**: Downgrades `block` -> `warn` (never escalates). Excluded action types: `revenue_claim`, `git_push`, `publish`, `state_write`, `funnel_email`, `deploy` — rules 14/22/29/30/50/55/58/59 remain hard.
+
+**Recovery**: On non-downgrade (personal-help domain, no fetch, no hedge), extends the parent block message with: `Personal-help claim in <domain> \u2014 run a same-turn browse_url / web_search / business_lookup.py before asserting the number.`
+
+**Cross-ref**: `harness/contracts/claim_provenance_gate.md`, rule 61 (business info sourcing).
+
+### FM-014.b — Question-referent grounding failure
+
+**Parent:** FM-014 (state-assertion-grounding)
+
+**Symptom:** Assistant opens with `Yes.` / `No.` / `Confirmed.` / definitive present-tense state verb in response to a verification-shaped question from the user, without running the tool call that would resolve the question's referent in the same turn.
+
+**Contract:** `question-referent-grounding-gate` (block, pre-emit)
+
+**Recovery:** Model retry receives a system reminder naming the resolved evidence class and the concrete tool command required. Model runs the tool, then answers.
+
+**Distinction from FM-014 parent:** parent guard is response-side keyword scan (`state-assertion-grounding`); this sub-contract is question-side referent classification. Belt-and-suspenders pairing per Rule 55.
