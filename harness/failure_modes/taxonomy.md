@@ -865,3 +865,12 @@ A character-proximity window was tried first and failed — it still reached int
 **Recovery:** Model retry receives a system reminder naming the resolved evidence class and the concrete tool command required. Model runs the tool, then answers.
 
 **Distinction from FM-014 parent:** parent guard is response-side keyword scan (`state-assertion-grounding`); this sub-contract is question-side referent classification. Belt-and-suspenders pairing per Rule 55.
+
+### FM-012.b: Pressure-framing enforcement timeout (subclass of FM-012)
+
+**Parent:** FM-012 (Manual instruction guard)
+**Pattern:** Execution proceeds after `pressure-framing-guard` times out without returning an explicit enforcement decision.
+**Root cause:** A timeout is treated as an implicit pass, bypassing the existing pressure-framing contract.
+**Contract:** `pressure-framing-timeout-guard`
+**Code guard:** `core/contracts.py:PressureFramingTimeoutGuard` — blocks only an explicit `contract_timeout` event for `pressure-framing-guard`; it does not perform additional keyword scanning.
+**Recovery:** Retry `pressure-framing-guard` with a bounded timeout and require an explicit pass or violation result before proceeding.
