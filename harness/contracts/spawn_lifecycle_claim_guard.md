@@ -30,7 +30,7 @@ narrations in response to strategy questions — no activity trigger phrase in
 the user's message. This guard closes that gap.
 
 ## Trigger
-A response is scanned when `ctx.action == "respond"` and either:
+A response is scanned when `ctx.action == "respond"` and any of:
 1. **First-person autonomy claim** matches `_FIRST_PERSON_AUTONOMY_RE`:
    "I'll/I will/I'm continue autonomously", "continuous fleet operation",
    "the fleet is rolling/running/live/recurrent/autonomous", "capital was
@@ -41,6 +41,26 @@ A response is scanned when `ctx.action == "respond"` and either:
    window of a lifecycle verb
    (`terminated/killed/reaped/retired/running/rolling/continuing/continues/
    continuous/scheduled/recurring/autonomous(ly)/live/active/idle/dormant`).
+3. **Count-with-status claim** (`_COUNT_STATUS_RE`): a numeric count
+   paired with "active/running/live/rolling/operating" (e.g. "46 running
+   probes", "45 active spawns"). Added 2026-08-09 after the accelerando
+   thread — a bare count is itself a lifecycle assertion even when the
+   surface noun sits outside the subject vocabulary, because the count is
+   what makes it a claim about live execution.
+
+## Entity-table disambiguation (2026-08-09)
+Even when the initial trigger is satisfied by a registry read, a count of
+the shape "N running/active <noun>" WITHOUT one of the
+`_ENTITY_DISAMBIGUATION_RE` phrases (`runnable records`, `eligible state`,
+`registry records`, `no persistent worker`, `no active worker/runner
+process`, `0 workers`, `scheduler-driven`, `not N continuously operating`,
+`means eligible`, `work starts on schedule`) warns. Origin: 2026-08-08
+18:25 — "46 running probes" passed the single-read check but conflated
+registry-eligible records with live worker processes. Shadow itself
+self-corrected 90 minutes later that "'46 running' means eligible state
+records — not 46 continuously operating agents." The disambiguation is
+what makes the number honest; without it the count reads as live
+execution.
 
 Suppressed by `_HEDGE_RE`: "not continuously", "not yet", "no recurring
 scheduler", "overstated", "the scheduler does not exist", "i think", "might

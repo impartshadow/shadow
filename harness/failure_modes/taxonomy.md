@@ -874,3 +874,19 @@ A character-proximity window was tried first and failed — it still reached int
 **Contract:** `pressure-framing-timeout-guard`
 **Code guard:** `core/contracts.py:PressureFramingTimeoutGuard` — blocks only an explicit `contract_timeout` event for `pressure-framing-guard`; it does not perform additional keyword scanning.
 **Recovery:** Retry `pressure-framing-guard` with a bounded timeout and require an explicit pass or violation result before proceeding.
+
+### FM-014.c — Unsupported definitive mutable-state assertion
+
+**Parent:** FM-014 (completion-integrity / state-assertion-grounding)
+
+**Pattern:** A response definitively asserts the current, continuing, completed, or recent mutable state of a concrete process, service, deployment, file, job, resource, configuration, external record, or operation without fresh evidence tied to the exact canonical referent and asserted predicate.
+
+**Contract:** `state-assertion-grounding-gate` (block, pre-emit)
+
+**Detection:** Consumes structured `StateClaim` and `EvidenceRecord` data for every `respond` action. Governed claims require explicitly cited, same-turn evidence whose canonical referent class, referent ID, and observed predicate match; the probe must have succeeded, satisfy source-specific integrity rules, and remain within its freshness limit. Missing structured extraction, unresolved concrete referents, stale evidence, failed probes, indeterminate probes, opposite-state evidence, and evidence for another referent fail closed.
+
+**Recovery:** Suppress the original candidate. Run an authorized matching probe and regenerate, or remove the definitive assertion and disclose that the current state has not been verified. User-supplied evidence may be reported only with explicit attribution and its timestamp or stated scope. Every regenerated response must pass the gate again.
+
+**Severity:** Block.
+
+**Enforcement fidelity:** Every `respond` action records `PASS`, `BLOCK`, or `NOT_APPLICABLE` in `state_assertion_grounding_gate_decision`; a missing structured claim ledger produces `BLOCK` rather than an implicit pass.
