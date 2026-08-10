@@ -890,3 +890,34 @@ A character-proximity window was tried first and failed — it still reached int
 **Severity:** Block.
 
 **Enforcement fidelity:** Every `respond` action records `PASS`, `BLOCK`, or `NOT_APPLICABLE` in `state_assertion_grounding_gate_decision`; a missing structured claim ledger produces `BLOCK` rather than an implicit pass.
+
+### FM-022 — Mutable state grounding guard (supplementary)
+
+| Field | Value |
+|---|---|
+| **Contract** | `mutable-state-grounding-guard` |
+| **Applicable contracts** | `concurrence-grounding`, `stale-state-assertion-guard` |
+| **Pattern** | A final response asserts, infers, temporally extends, or concurs with a mutable current-state proposition without successful, relevant, same-turn, non-superseded evidence for every referent, predicate, polarity, quantifier, and temporal qualifier. |
+| **Root cause** | Mutable state is inferred from conversation memory, stale observations, unrelated reads, ambiguous referents, or overextended reasoning instead of claim-specific authoritative evidence. |
+| **Detection** | `core/contracts.py:MutableStateGroundingGuard` is an emission-blocking `check_pre` for every `respond` action. It consumes structured claims produced by the versioned predicate ontology and joins them to same-turn evidence, mutation ordering, supersession metadata, quantifier coverage, temporal support, and registered derivations. Missing extraction metadata fails closed. |
+| **Violation subtypes** | `FM-022.UNGROUNDED_CURRENT_STATE`, `FM-022.STALE_EVIDENCE`, `FM-022.UNRELATED_EVIDENCE`, `FM-022.UNRESOLVED_REFERENT`, `FM-022.UNSUPPORTED_CONCURRENCE`, `FM-022.UNSUPPORTED_TEMPORAL_CLAIM`, `FM-022.OVEREXTENDED_INFERENCE` |
+| **Severity** | `block` |
+| **Recovery** | Withhold the complete candidate. Obtain live authoritative evidence and regenerate, or replace the claim with an explicitly attributed historical report or clearly bounded statement that current state has not been verified. Neutralize concurrence until its exact proposition is grounded. Temporal claims additionally require timestamp or continuity evidence. Run the guard again before dispatch. |
+| **Invariant** | No user-visible response may assert, infer, temporally extend, or concur with mutable current state unless its referent, predicate, polarity, scope, and temporal qualifiers are grounded by acceptable evidence. |
+
+## FM-033: approval-seeking patterned stop despite established authority
+**Pattern:** Shadow asks the user to authorize, select, or confirm an assistant or tool action that is already within the current task's established scope, making progress depend on unnecessary approval. Examples include "Should I proceed?", "Would you like me to update the tests?", and "I can prepare the report if you want."
+**Root cause:** Assistant output is dispatched before its complete speech act is classified, or phrase-only detection lacks structured scope, authorization, operativeness, and semantic-role context.
+**Contract:** `ApprovalSeekingSpeechActGuard` (`approval-seeking-speech-act-guard`, block) checks complete buffered segments in `check_pre` before transport dispatch or associated tool execution. Candidate phrases receive semantic classification using structured scope, authorization, target, and discourse-role metadata. Prohibited and uncertain candidates fail closed. `check_post` provides defense in depth only.
+**Recovery:** Discard the complete pending response, cancel associated unexecuted tool calls, and regenerate from the last safe state with the mandatory correction instruction. Continue the authorized work or emit a self-contained completion. Permit at most two regeneration attempts; after repeated failure, emit a neutral non-soliciting completion or blocker and execute no pending tools.
+**False-positive controls:** Allow non-operative quotations, examples, translations, documentation, test fixtures, reported speech, capability questions, and genuine authorization requests only when their semantic role or authorization boundary is established by structured context. Formatting alone does not exempt live questions.
+**Audit signal:** Record the pre-dispatch classification, segment boundary, authorization metadata, transport byte count, canceled tool-call count, and regeneration result. A passing integration test must show zero user-facing bytes and zero associated tool executions for a blocked draft while allowing quoted examples and structured authorization requests.
+
+## FM-003 — Acting without requested assessment or agreement
+**Pattern:** Shadow performs a consequential action based on a proposal before presenting critique, validation, refinement, pressure-testing, or collaborative judgment requested by the user, or acts before required user agreement.
+**Root cause:** Execution authorization is treated as overriding a review-before-action ordering constraint, or hidden reasoning is mistaken for a user-visible assessment.
+**Contract:** `collaborative-review-gate`
+**Code guard:** `core/contracts.py:CollaborativeReviewGate` — binds the active review obligation, structured user-visible review record, and any subsequent user agreement to a stable proposal/action identifier before allowing mutation.
+**Recovery:** Present an assessment with an accept/revise/reject decision and material changes. If collaboration, confirmation, or approval was required, wait for a later matching user agreement before executing.
+
+> **Normative definition — FM-003 — Acting without requested assessment or agreement:** When a user requests critique, validation, refinement, pressure-testing, or collaborative judgment concerning a proposal, the system must not perform a consequential action based on that proposal until it has presented the requested assessment. If the user also makes execution conditional on collaboration, confirmation, or approval, the system must not act until that agreement is obtained.

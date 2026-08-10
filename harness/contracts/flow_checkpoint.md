@@ -2,7 +2,7 @@
 
 ## Type
 
-Post-check, observe-only instrumentation. No blocking, pure tagging for multi-agent flow rerouting.
+Post-check instrumentation feeding deterministic, bounded recovery routing.
 
 ## Reference
 
@@ -52,13 +52,14 @@ High-confidence outputs (> 0.9) are also logged for observability.
 
 ## Integration Points
 
-### Nightly Pipeline
+### Deterministic Consumer
 
-Consume `state/flow_routing_queue.jsonl` to:
+`core/flow_rerouter.py` consumes `state/flow_routing_queue.jsonl` to:
 
 1. Flag patterns (e.g., "low confidence on Git operations" → escalate to Git specialist role)
-2. Retry with expanded system prompt ("Provide explicit reasoning steps")
-3. Route to fallback handler or secondary agent role
+2. Route recognized execution failures to one named fallback executor
+3. Escalate authentication failures instead of retrying them
+4. Record the original route, recovery decision, and timestamp in an append-only ledger
 
 ### Fallback Escalation
 
@@ -70,7 +71,7 @@ When `needs_rerouting == true`:
 
 ## Recovery
 
-No recovery action (observe-only). Low-confidence outputs are not blocked; they're routed asynchronously by nightly pipeline or fallback handlers.
+Recovery is bounded to one fallback. Unknown failures escalate rather than chaining autonomously.
 
 ## Severity
 
@@ -93,4 +94,7 @@ This contract is the minimal implementation of arXiv:2605.12943. Full reinforced
 3. RL reward signal for rerouting decisions (not included)
 4. Nightly pipeline consumer that reads `flow_routing_queue.jsonl` (not included)
 
-The contract provides the observation layer. Rerouting logic belongs in the caller/pipeline.
+The contract provides the observation layer. `core/flow_rerouter.py` owns deterministic
+classification, while `core/task_dag.py` applies a single named fallback and persists
+the outcome. Reinforcement learning remains intentionally deferred until the ledger
+contains enough clean outcome-labelled routing data.
