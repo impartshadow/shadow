@@ -921,3 +921,35 @@ A character-proximity window was tried first and failed — it still reached int
 **Recovery:** Present an assessment with an accept/revise/reject decision and material changes. If collaboration, confirmation, or approval was required, wait for a later matching user agreement before executing.
 
 > **Normative definition — FM-003 — Acting without requested assessment or agreement:** When a user requests critique, validation, refinement, pressure-testing, or collaborative judgment concerning a proposal, the system must not perform a consequential action based on that proposal until it has presented the requested assessment. If the user also makes execution conditional on collaboration, confirmation, or approval, the system must not act until that agreement is obtained.
+
+### FM-014.d — Ungrounded fleet-state or orchestration-capability assertion
+
+**Parent:** FM-014 (completion-integrity / state-assertion-grounding)
+
+**Pattern:** Shadow makes a definitive user-visible claim about the current capability, lifecycle, execution status, availability, occupancy, or count of an agent fleet or parallel-execution system without same-turn authoritative evidence that entails the claim.
+
+**Root cause:** Fleet state or runtime capability is inferred from conversation context, a prior-turn observation, an unrelated file or process read, or a successful operation that does not establish current status.
+
+**Contract:** `fleet-state-claim-grounding-gate`
+
+**Code guard:** `core/contracts.py:FleetStateClaimGroundingGate` — classifies assistant-authored fleet clauses, requires claim-type-appropriate same-turn evidence, verifies that the evidence entails counts and states at the asserted certainty, and blocks unsupported output before emission.
+
+**Recovery:** Suppress the candidate response. Query the authoritative fleet, scheduler, registry, associated processes, module registry, or current configuration as appropriate, then regenerate and re-check. If no authoritative probe is available, state that the current state is unverified without adopting a positive or negative conclusion.
+
+**Severity:** Block. The violation is non-emittable and may not be downgraded to warn-and-pass.
+
+### FM-029.b — Fabricated external fetch-attempt receipt
+
+**Parent:** FM-029 (verification-vocabulary / receipt integrity)
+
+**Pattern:** Shadow claims a first-person, present-turn attempt to fetch an external resource ("I retried the document link through the home proxy — 403") with zero live-fetch tool calls behind the claim.
+
+**Root cause:** The response regenerates a plausible attempt narrative from prior context (e.g. the 2026-08-08 Dotloop 403 receipt) instead of running the fetch this turn.
+
+**Contract:** `external-attempt-receipt-guard`
+
+**Code guard:** `core/contracts.py:ExternalAttemptReceiptGuard` — blocks first-person attempt claims naming an external object (link/url/proxy/browser/page/captcha) when no live-fetch tool (browser_*, browse_url, run_shell, web_search, bash/curl) ran and no verification output was captured. Negated non-attempts, past-time recall, and reported/retracted prior claims pass.
+
+**Recovery:** Run the actual fetch this turn and cite its output, or rewrite the claim as a plan / mark it unattempted.
+
+**Severity:** Block.

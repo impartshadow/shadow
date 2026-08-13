@@ -47,6 +47,18 @@ A response is scanned when `ctx.action == "respond"` and any of:
    thread — a bare count is itself a lifecycle assertion even when the
    surface noun sits outside the subject vocabulary, because the count is
    what makes it a claim about live execution.
+4. **Capability/gap claim** (`_CAPABILITY_GAP_RE`): "the missing
+   layer/piece/mechanism is X", "it/Shadow/the fleet/accelerando cannot
+   routinely/currently X", "no controlled/automated branching/selection/
+   variants", "does not support parallel variants". Requires either a
+   fleet subject in the response or a registry-backed capability concept
+   ("controlled branching", "bounded variants", "shared evaluator",
+   "promote the winner", "discovery loop", "accelerando") in the response
+   or the user message. Added 2026-08-12 after the Discovery Loop replay
+   where Shadow said accelerando's "missing layer is controlled branching"
+   — a claim the registry (which already exercises exactly that shape)
+   would have refuted. What the fleet is *capable of* is a live-state
+   assertion, not architectural inference.
 
 ## Entity-table disambiguation (2026-08-09)
 Even when the initial trigger is satisfied by a registry read, a count of
