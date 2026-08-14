@@ -953,3 +953,16 @@ A character-proximity window was tried first and failed — it still reached int
 **Recovery:** Run the actual fetch this turn and cite its output, or rewrite the claim as a plan / mark it unattempted.
 
 **Severity:** Block.
+
+### FM-022 — Timeout assertion grounding guard (supplementary)
+
+| Field | Value |
+|---|---|
+| **Contract** | `timeout-assertion-grounding-guard` |
+| **Pattern** | A response asserts that a concrete operation timed out without a verified timeout receipt for that exact operation from the same turn. |
+| **Root cause** | A missing, delayed, failed, or indeterminate result is interpreted as a timeout, or a timeout observed for another operation is applied to the asserted operation. |
+| **Detection** | `TimeoutAssertionGroundingGuard` runs before emitting a `respond` action when structured timeout-claim extraction is complete. Each asserted timeout claim must resolve to an operation ID with a same-turn, verified `tool_result` or `verification_output` record whose status is `timeout`. Unresolved operation IDs and unrelated, unverified, non-timeout, or prior-turn receipts do not satisfy the claim. |
+| **Violation subtype** | `FM-022.UNGROUNDED_TIMEOUT` |
+| **Severity** | `block` |
+| **Recovery** | Withhold the assertion, inspect the exact operation result, and regenerate with matching verified evidence. If the result cannot be established, describe the outcome as unknown rather than timed out. |
+| **Invariant** | No concrete timeout assertion may be emitted without verified same-turn timeout evidence tied to the exact operation. |
