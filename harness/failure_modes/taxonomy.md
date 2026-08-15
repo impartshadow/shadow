@@ -966,3 +966,32 @@ A character-proximity window was tried first and failed — it still reached int
 | **Severity** | `block` |
 | **Recovery** | Withhold the assertion, inspect the exact operation result, and regenerate with matching verified evidence. If the result cannot be established, describe the outcome as unknown rather than timed out. |
 | **Invariant** | No concrete timeout assertion may be emitted without verified same-turn timeout evidence tied to the exact operation. |
+
+## FM-014: Unsupported or misbound state assertion emitted as fact
+
+**Pattern:** A user-visible response asserts externally checkable referent, runtime, lifecycle, tool-result, stored-state, or context-derived facts without an atomic manifest whose complete typed tuples are entailed by admissible evidence.
+
+**Root cause:** Response authorization relied on keyword heuristics, evidence presence, or earlier lifecycle phases instead of exact subject–predicate–value–qualifier entailment.
+
+**Contract:** `typed-claim-entailment-gate`
+
+**Code guard:** `core/contracts.py:TypedClaimEntailmentGate` — a blocking `check_pre` gate over the exact candidate response, claim manifest, referent bindings, immutable evidence records, and current timestamp. It validates manifest coverage, canonical referents, evidence admissibility and freshness, lifecycle completion, completeness, and deterministic derivations. Approval is bound to a SHA-256 digest of the response and manifest.
+
+**Recovery:** Clarify ambiguous referents; retrieve or refresh missing or stale state; wait for pending results; report only evidenced failure or emptiness; preserve uncertainty for non-entailed or conflicting claims; and independently re-run the gate on regenerated responses.
+
+**Severity:** Block.
+
+**Subcodes:** `FM-014.REFERENT`, `FM-014.MANIFEST`, `FM-014.EVIDENCE`, `FM-014.ENTAILMENT`, `FM-014.LIFECYCLE`, `FM-014.STALENESS`, `FM-014.COMPLETENESS`.
+
+**Supersedes:** `question-referent-grounding-gate`, `spawn-lifecycle-claim-guard`, and `state-assertion-grounding`; those mechanisms may still produce bindings or evidence but do not authorize emission.
+
+### FM-022 addendum — `will-assertion-grounding-gate`
+
+**Pre-gate** — blocks response emission when the user's most recent message contains a state-shaped factual assertion about a Shadow-observable target (queue, fleet, cron, tenant, integration, state file) and no grounding tool ran this turn. Extends the existing FM-022 post-hoc guards (`stale-state-assertion-guard`, `concurrence-grounding`) by preventing ratification before Shadow speaks.
+
+**Trigger**: the user's message matches a state-verb + state-predicate pattern (e.g., 'the queue is stale', 'fleet is rolling', 'capital was terminated, right?'), the response is text (not a pure tool call), and no allowlisted grounding tool (`Read`, `Grep`, `Glob`, `Bash`/`run_shell` with `git log`/`pgrep`/`cat state/`/etc., or `mcp__shadow__*` read-shaped mirror) fired this turn with target overlap.
+
+**Recovery**: Recovery message names the extracted target and the matched clause, and lists suggested grounding paths (state file, process check, git history, canonical script). The next model turn must produce a grounding call before the response text is re-attempted.
+
+**Carve-outs**: pure directives/imperatives, opinion/preference shapes, off-domain assertions (world facts, movie plots), and `#shadow-log` self-audit notes.
+
