@@ -33,15 +33,6 @@ This is the same structural failure as the banned action-option-menu
 pattern (CLAUDE.md rule 10 — "never present the user a menu to choose from for
 an authorized call") applied to *interpretation* instead of action.
 
-## Upstream cause caught in the same fix
-
-`BALARClarificationGuard.auto_recover` used to instruct Haiku to
-"Briefly enumerate the 2-3 most plausible interpretations of the user's
-message… ask the single question that best disambiguates". That template
-literally manufactured the anti-pattern this guard blocks. It has been
-rewritten to instruct the model to pick the highest-probability
-interpretation and answer/execute against it directly.
-
 ## Recovery
 
 Pick the highest-probability interpretation and answer or execute against it
@@ -52,8 +43,8 @@ with "which of these" / "which is the priority" / "which best describes".
 ## Non-violations
 
 Real blocking ambiguity in an execution-adjacent request (e.g. "restart the
-bot" when two bots are running) is still handled by the standing BALAR EMI
-gate. This contract only fires when the response is a menu of readings of
+bot" when two bots are running) remains a legitimate reason to ask one precise
+question. This contract only fires when the response is a menu of readings of
 the user's own message and hands the pick back to him.
 
 ## Tests
@@ -65,5 +56,5 @@ external ambiguity, single-position answer, direct answers).
 ## History
 
 - 2026-07-08: created after `/reflect` diagnosed the MTP refinement stall.
-  Same fix rewrites `BALARClarificationGuard.auto_recover` to stop
-  producing interpretation menus as recovery output.
+- 2026-08-16: removed the zero-signal BALAR model judge; this deterministic
+  guard remains the canonical owner for interpretation-menu deferrals.

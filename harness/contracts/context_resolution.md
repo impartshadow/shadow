@@ -26,7 +26,7 @@ Pre-response gate — harness-enforced
 - **Trigger:** Before asking ANY clarifying question.
 - **Precondition:** Trace back through last 5 messages. Then check external systems.
 - **Violation:** Asking "what did you mean?" when the answer is in the prior message.
-- **BALAR extension (code-enforced via `BALARClarificationGuard`):**
+- **Clarification rule:**
   When clarification is genuinely needed, enumerate 2-3 plausible interpretations of
   the user's message, then ask the single question that maximally disambiguates between them
   (highest expected mutual information). Never ask multiple questions. Never ask the
@@ -67,7 +67,7 @@ Pre-response gate — harness-enforced
      that includes step N
   4. If exactly one candidate matches: restate the target in one line
      (`Doing step 4 of <task name>: <step summary>`) before executing.
-  5. If 2+ candidates match: ask ONE BALAR question naming the candidates.
+  5. If 2+ candidates match: ask one precise question naming the candidates.
 - **Violation:** Acting on "step N" without first restating which task and
   which step is being performed. This forces the user to verify and re-state
   ("No. The compounding step. Did you do step 4 of the daily moonshot…").

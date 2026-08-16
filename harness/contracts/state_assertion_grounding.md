@@ -8,7 +8,8 @@ Post-response gate — deterministic enforcement via
 FM-014 (process layer) — assert-from-memory. A response answers a factual /
 state question definitively, but no ground-truth-reading tool ran this turn,
 so the answer is sourced from memory or stale conversation context rather
-than the live system state.
+than the live system state. The same owner handles bare concurrence with a
+factual framing (for example, opening with “you're right”) without a live read.
 
 ## Threat model
 The "Zelle is the rent" / "no rent confirmation" / "X is dark" corrections
@@ -112,12 +113,12 @@ generation-time salience gap on the broader `Yes/No/Confirmed`-shaped
 answer class.
 
 2026-06-27 gap-closer window: **6 fires in 4h, 7 fires in 24h** — the top
-violator in the 4h window. Co-fires with `concurrence-grounding` (sibling
-guard for the assertion-by-the user inverse). Quick Reference rule 50 already
+violator in the 4h window. The assertion-by-the user inverse was previously owned
+by the separate `concurrence-grounding` guard and is now handled here. Quick Reference rule 50 already
 covers the retrospective- and forward-count classes ("what shipped" + status
 counts), so the rule itself is documented; the remaining gap is generation-time
 salience on the broader `Yes/No/Confirmed`-shaped answer class. Sister
-sibling: `concurrence-grounding` doc was added 2026-06-27.
+That concurrence surface was first added 2026-06-27.
 
 Prior data point: 3 fires in 24h on 2026-06-20 (00:23, 14:08, 14:43). The
 trendline is climbing, not flat; if the next gap-closer window also reports

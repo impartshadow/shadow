@@ -131,19 +131,19 @@ Push back with one clear objection when the user is going down a bad path.
 
 ### FM-004 — Wrong tool route / Web capability denial
 
-**Contract:** `web-tool-guard` (replaces `wrong-tool-route` + `capability-misroute`)
+**Contracts:** `web-tool-rewriter` (dispatch), `web-tool-invocation-rewriter` (prose), and `web-tool-guard` (evidence).
 
 **Trigger:** Any interaction involving web tool calls or response text mentioning web tools/access.
 
-**Pre-check:** Blocks `WebFetch` / `WebSearch` tool calls — must use `mcp__shadow__browse_url` / `mcp__shadow__web_search`.
+**Pre-check:** `web-tool-rewriter` replaces legacy tool dispatch with `mcp__shadow__browse_url` / `mcp__shadow__web_search`.
 
-**Post-check (a):** Blocks any mention of `WebFetch` / `WebSearch` in response text.
+**Post-check (a):** `web-tool-invocation-rewriter` replaces legacy invocation names in user-facing prose while exempting quoted and diagnostic mentions.
 
-**Post-check (b):** Blocks claims that web access is unavailable unless an MCP tool was actually attempted (`ctx.tool_calls` contains MCP tool, `smoke_test_ran` is True, or response contains MCP error evidence).
+**Post-check (b):** `web-tool-guard` blocks claims that web access is unavailable unless a canonical tool was actually attempted, and blocks unfetched product URLs.
 
 **Severity:** Block (all checks).
 
-**Recovery:** Replace banned tool with MCP equivalent; remove banned tool names from text; attempt MCP tool before claiming inability.
+**Recovery:** Route or rewrite through the canonical tool and attempt it before claiming inability.
 
 ### FM-015: unvalidated-memory-write
 
@@ -210,9 +210,9 @@ Push back with one clear objection when the user is going down a bad path.
 
 ### FM-004 — Wrong tool routed
 
-**Contract:** `web-tool-rewriter` (pre-check rewrite), `web-tool-guard` (pre+post block), `web-tool-guard-v2` (pre+post block with escalation)
+**Contracts:** `web-tool-rewriter` (pre-check dispatch rewrite), `web-tool-invocation-rewriter` (post-check prose rewrite), and `web-tool-guard` (post-check evidence gate).
 
-**Recovery:** `WebToolRewriter` silently rewrites `WebFetch` → `mcp__shadow__browse_url` and `WebSearch` → `mcp__shadow__web_search` in-place before execution. Downstream guards serve as fallback if rewrite is bypassed.
+**Recovery:** `WebToolRewriter` silently rewrites legacy dispatch before execution. `WebToolInvocationRewriter` handles the equivalent prose surface; `WebToolGuard` independently requires a real attempt before denial.
 
 ### FM-011 — Action deferral: proposes or instructs instead of executing
 
@@ -544,7 +544,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 
 ### FM-017 (routing layer): SensitiveWriteRouter
 
-**Symptom**: Model attempts Write/Edit against a sensitive path (system dir, credential file, or raw state/ JSON) and the existing `dangerous-path-guard` blocks without naming the canonical mechanism, so the next turn regenerates the same wrong write.
+**Symptom**: Model attempts Write/Edit against a sensitive path (system dir, credential file, or raw state/ JSON) and needs routing to the canonical mechanism instead of a generic path block.
 
 **Detection**: `sensitive-write-router` classifies the canonicalized `file_path` into three buckets in order:
   - Bucket A (SYSTEM_DESTRUCTIVE): `/etc/`, `/usr/`, `/var/`, `/bin/`, `/sbin/`, `/boot/`, `/root/`, `/sys/`, `/proc/`, home dotfiles (`.bashrc`, `.zshrc`, `.ssh/*`, `.aws/credentials`, `.docker/config.json`, `.kube/*`), or any path outside `/home/agentshadow/shadow/` that is not `/tmp/` or a tool-owned home dir (`~/.claude/`, `~/.codex/`, `~/.config/`, `~/.local/`, `~/.npm-global/`, `~/.cache/`).
@@ -557,7 +557,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 
 **Escalation**: Bucket A with no in-repo alternative surfaces as a Rule 4 blocker (the user-only op).
 
-**Supersedes-not-replaces**: `dangerous-path-guard` remains active as the block-only layer until this contract has 30 days of production without incident.
+**Canonical owner**: `sensitive-write-router`. The former `dangerous-path-guard` was retired after its 30-day overlap window; regression coverage for its legacy `write_file`/`path`, token-file, Git-config, and temporary-staging surfaces now runs against this router.
 
 ## FM-037: internal-message-misattribution
 
@@ -854,27 +854,6 @@ A character-proximity window was tried first and failed — it still reached int
 
 **Cross-ref**: `harness/contracts/claim_provenance_gate.md`, rule 61 (business info sourcing).
 
-### FM-014.b — Question-referent grounding failure
-
-**Parent:** FM-014 (state-assertion-grounding)
-
-**Symptom:** Assistant opens with `Yes.` / `No.` / `Confirmed.` / definitive present-tense state verb in response to a verification-shaped question from the user, without running the tool call that would resolve the question's referent in the same turn.
-
-**Contract:** `question-referent-grounding-gate` (block, pre-emit)
-
-**Recovery:** Model retry receives a system reminder naming the resolved evidence class and the concrete tool command required. Model runs the tool, then answers.
-
-**Distinction from FM-014 parent:** parent guard is response-side keyword scan (`state-assertion-grounding`); this sub-contract is question-side referent classification. Belt-and-suspenders pairing per Rule 55.
-
-### FM-012.b: Pressure-framing enforcement timeout (subclass of FM-012)
-
-**Parent:** FM-012 (Manual instruction guard)
-**Pattern:** Execution proceeds after `pressure-framing-guard` times out without returning an explicit enforcement decision.
-**Root cause:** A timeout is treated as an implicit pass, bypassing the existing pressure-framing contract.
-**Contract:** `pressure-framing-timeout-guard`
-**Code guard:** `core/contracts.py:PressureFramingTimeoutGuard` — blocks only an explicit `contract_timeout` event for `pressure-framing-guard`; it does not perform additional keyword scanning.
-**Recovery:** Retry `pressure-framing-guard` with a bounded timeout and require an explicit pass or violation result before proceeding.
-
 ### FM-014.c — Unsupported definitive mutable-state assertion
 
 **Parent:** FM-014 (completion-integrity / state-assertion-grounding)
@@ -896,7 +875,7 @@ A character-proximity window was tried first and failed — it still reached int
 | Field | Value |
 |---|---|
 | **Contract** | `mutable-state-grounding-guard` |
-| **Applicable contracts** | `concurrence-grounding`, `stale-state-assertion-guard` |
+| **Applicable contracts** | `state-assertion-grounding`, `stale-state-assertion-guard` |
 | **Pattern** | A final response asserts, infers, temporally extends, or concurs with a mutable current-state proposition without successful, relevant, same-turn, non-superseded evidence for every referent, predicate, polarity, quantifier, and temporal qualifier. |
 | **Root cause** | Mutable state is inferred from conversation memory, stale observations, unrelated reads, ambiguous referents, or overextended reasoning instead of claim-specific authoritative evidence. |
 | **Detection** | `core/contracts.py:MutableStateGroundingGuard` is an emission-blocking `check_pre` for every `respond` action. It consumes structured claims produced by the versioned predicate ontology and joins them to same-turn evidence, mutation ordering, supersession metadata, quantifier coverage, temporal support, and registered derivations. Missing extraction metadata fails closed. |
@@ -954,19 +933,6 @@ A character-proximity window was tried first and failed — it still reached int
 
 **Severity:** Block.
 
-### FM-022 — Timeout assertion grounding guard (supplementary)
-
-| Field | Value |
-|---|---|
-| **Contract** | `timeout-assertion-grounding-guard` |
-| **Pattern** | A response asserts that a concrete operation timed out without a verified timeout receipt for that exact operation from the same turn. |
-| **Root cause** | A missing, delayed, failed, or indeterminate result is interpreted as a timeout, or a timeout observed for another operation is applied to the asserted operation. |
-| **Detection** | `TimeoutAssertionGroundingGuard` runs before emitting a `respond` action when structured timeout-claim extraction is complete. Each asserted timeout claim must resolve to an operation ID with a same-turn, verified `tool_result` or `verification_output` record whose status is `timeout`. Unresolved operation IDs and unrelated, unverified, non-timeout, or prior-turn receipts do not satisfy the claim. |
-| **Violation subtype** | `FM-022.UNGROUNDED_TIMEOUT` |
-| **Severity** | `block` |
-| **Recovery** | Withhold the assertion, inspect the exact operation result, and regenerate with matching verified evidence. If the result cannot be established, describe the outcome as unknown rather than timed out. |
-| **Invariant** | No concrete timeout assertion may be emitted without verified same-turn timeout evidence tied to the exact operation. |
-
 ## FM-014: Unsupported or misbound state assertion emitted as fact
 
 **Pattern:** A user-visible response asserts externally checkable referent, runtime, lifecycle, tool-result, stored-state, or context-derived facts without an atomic manifest whose complete typed tuples are entailed by admissible evidence.
@@ -983,15 +949,17 @@ A character-proximity window was tried first and failed — it still reached int
 
 **Subcodes:** `FM-014.REFERENT`, `FM-014.MANIFEST`, `FM-014.EVIDENCE`, `FM-014.ENTAILMENT`, `FM-014.LIFECYCLE`, `FM-014.STALENESS`, `FM-014.COMPLETENESS`.
 
-**Supersedes:** `question-referent-grounding-gate`, `spawn-lifecycle-claim-guard`, and `state-assertion-grounding`; those mechanisms may still produce bindings or evidence but do not authorize emission.
+**Supersedes:** the retired `question-referent-grounding-gate`, plus
+`state-assertion-grounding`; the surviving mechanism may still produce bindings
+or evidence but does not authorize emission. Spawn capability-gap assertions
+remain owned by `capability-scope-assertion-guard`.
 
 ### FM-022 addendum — `will-assertion-grounding-gate`
 
-**Pre-gate** — blocks response emission when the user's most recent message contains a state-shaped factual assertion about a Shadow-observable target (queue, fleet, cron, tenant, integration, state file) and no grounding tool ran this turn. Extends the existing FM-022 post-hoc guards (`stale-state-assertion-guard`, `concurrence-grounding`) by preventing ratification before Shadow speaks.
+**Pre-gate** — blocks response emission when the user's most recent message contains a state-shaped factual assertion about a Shadow-observable target (queue, fleet, cron, tenant, integration, state file) and no grounding tool ran this turn. Extends the existing post-hoc guards (`stale-state-assertion-guard`, `state-assertion-grounding`) by preventing ratification before Shadow speaks.
 
 **Trigger**: the user's message matches a state-verb + state-predicate pattern (e.g., 'the queue is stale', 'fleet is rolling', 'capital was terminated, right?'), the response is text (not a pure tool call), and no allowlisted grounding tool (`Read`, `Grep`, `Glob`, `Bash`/`run_shell` with `git log`/`pgrep`/`cat state/`/etc., or `mcp__shadow__*` read-shaped mirror) fired this turn with target overlap.
 
 **Recovery**: Recovery message names the extracted target and the matched clause, and lists suggested grounding paths (state file, process check, git history, canonical script). The next model turn must produce a grounding call before the response text is re-attempted.
 
 **Carve-outs**: pure directives/imperatives, opinion/preference shapes, off-domain assertions (world facts, movie plots), and `#shadow-log` self-audit notes.
-
