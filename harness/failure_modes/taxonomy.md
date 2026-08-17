@@ -963,3 +963,16 @@ remain owned by `capability-scope-assertion-guard`.
 **Recovery**: Recovery message names the extracted target and the matched clause, and lists suggested grounding paths (state file, process check, git history, canonical script). The next model turn must produce a grounding call before the response text is re-attempted.
 
 **Carve-outs**: pure directives/imperatives, opinion/preference shapes, off-domain assertions (world facts, movie plots), and `#shadow-log` self-audit notes.
+
+### FM-217 — Resume envelope replay loop
+
+**Family**: lifecycle / restart (adjacent to FM-212 stacked restart envelopes, FM-208 lifecycle bypass on queued restart).
+
+**Pattern**: The harness re-wraps the same underlying user message into fresh autonomous-resume envelopes on a tight loop, mutating `restart_context.json` on each pass and spending compute without producing new state. Per-envelope harness fields (resume_generation, attempt counter, timestamp, restart-context UUID) defeat any dedupe that hashes the wrapped envelope.
+
+**Detection**: Normalized fingerprint over raw pre-envelope user text + channel_id (all harness-stamped fields excluded), stored in append-only `state/resume_fingerprints.jsonl` that survives boot. Block on the third resume-sourced attempt with the same fingerprint when the most recent prior attempt was <5 minutes ago and there have been ≥2 in the last 60 minutes.
+
+**Guard**: `ResumeEnvelopeReplayGuard` (pre-action). Pre-action counterpart to FM-212's post-hoc lifecycle repair.
+
+**Recovery**: Drop the envelope, quarantine the source `restart_context.json` entry, emit one `resume_loop_broken` event to `#shadow-log`, return a synthetic terminated action. Do not re-enqueue; do not notify the user.
+
