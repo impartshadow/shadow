@@ -86,6 +86,11 @@ regeneration; the cost of leaking the fabrication is the user re-asking a
 delivery question twice, plus loss of trust in every subsequent
 receipt where a real send ID is cited.
 
+The contract's deterministic auto-recovery removes only the unsupported
+send-ID line, preserves grounded sibling receipt lines, and adds an explicit
+statement that no outbound send is evidenced. This prevents an unchanged model
+retry from firing the same violation repeatedly.
+
 ## Deliberate blind spots
 - The gate does not verify that the cited ID is the *correct* ID — a
   wrong ID that happens to appear anywhere in the tool-evidence blob

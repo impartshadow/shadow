@@ -976,3 +976,20 @@ remain owned by `capability-scope-assertion-guard`.
 
 **Recovery**: Drop the envelope, quarantine the source `restart_context.json` entry, emit one `resume_loop_broken` event to `#shadow-log`, return a synthetic terminated action. Do not re-enqueue; do not notify the user.
 
+### FM-012 — Manual handoff / delegation to the user
+
+**Symptom:** Shadow emits a the user-facing draft that asks the user to run a command, click UI, paste a value, open a URL, verify a config, or 'check whether X' — instead of executing the action itself with available tools.
+
+**Root cause:** Model defaults to instructional voice when a tool path is non-obvious; lexical guards miss fenced commands, numbered UI walkthroughs, bare action-URLs, and subjunctive verification asks.
+
+**Guard:** `DelegationRewriteGuard` (`delegation-rewrite-guard`) — semantic Haiku classifier gated by a cheap lexical router; blocks pre-send and drives the `contract_guard.py` rewrite loop with a corrective system suffix + `tool_choice=required` retry. On second-retry failure, emits a canned stub and files a gap entry to `state/improvement_backlog.jsonl`. Supersedes the advisory portion of `manual-handoff-guard`.
+
+### FM-014.e — Claim derived from timed-out evidence
+
+**Parent:** FM-014 (unsupported or misbound state assertion emitted as fact)
+
+**Failure:** A factual claim cites an operation result whose structured `result_status` is `timeout`. A timeout establishes only that the operation did not produce a completed result; it cannot entail success, failure, absence, completeness, or current state.
+
+**Enforcement:** `timeout-claim-entailment-gate` checks the typed claim manifest against same-turn evidence records. It blocks any claim citing timed-out evidence unless the claim directly reports `evidence.result_status == "timeout"`. It does not scan prose for timeout-related keywords.
+
+**Recovery:** Retry or obtain a completed authoritative result. If no completed result is available, report only the timeout and leave the requested fact explicitly unverified.
