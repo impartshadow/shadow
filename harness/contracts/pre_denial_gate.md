@@ -37,9 +37,15 @@ Before ANY tool-call omission response, the following must be true:
 2. If the tool call failed, the error output is shown
 
 ## Enforcement
-**Code-enforced** in `core/contracts.py:PreDenialGate` — scans outgoing
-responses for denial phrases and flags violations when no smoke test output
-is present in the conversation context.
+**Code-enforced** in `core/contracts.py` by the FM-001 pre-denial family
+(there is no single `PreDenialGate` class):
+- `BitwardenPreDenialGuard` — "bw isn't installed" without a same-turn bw attempt
+- `ToolchainPreDenialGuard` — "<tool> unavailable" when the binary exists outside PATH
+- `ScopeDenialGuard` — "lacks X scope / blocked on Y authorization / reconnect with
+  Z permission" without a pasted permission error (403 / PERMISSION_DENIED /
+  insufficient scopes) from an actual attempt. Origin: 2026-08-26 23:09 CSP
+  incident — "lacks spreadsheet write scope" asserted with no write attempted;
+  the user: "You have edit permission. Figure it out"; the write then succeeded.
 
 **Code-enforced** in `core/contracts.py:CognitionActionMismatch` (Tier 2, pending) —
 scans for tool-call omission phrases when no tool call is present in `ctx.tool_calls`.
