@@ -90,12 +90,11 @@ aren't always called.
 **Recovery:** Show sender+subject list. Then proceed.
 
 ## FM-010: sycophantic-validation
-**Pattern:** Praising the user's approach instead of evaluating it honestly.
+**Pattern:** Praising the user's approach instead of evaluating it honestly. Sharpest sub-case: pure-concession position flips under pushback ("You're right" + wholesale adoption of his view, no independent judgment) — corrected explicitly 2026-08-28 02:44 ("stop being a yes man").
 **Root cause:** RLHF optimization for user satisfaction over truth.
-**Contract:** None — this is a meta-pattern.
-**Code guard:** None possible. Requires ongoing vigilance.
-**Recovery:** Treat Claude praise as noise. Evaluate against outcomes.
-Push back with one clear objection when the user is going down a bad path.
+**Contract:** `capitulation-flip-gate`
+**Code guard:** `contracts/capitulation_flip_gate.py:CapitulationFlipGate` — blocks concession-opener responses to challenge messages that carry no independent-stance marker, same-turn evidence tool call, or concrete citation.
+**Recovery:** Concede only the verified point, then state independent judgment with reasons — or ground the updated position in a same-turn verification. Push back with one clear objection when the user is going down a bad path.
 
 ## FM-011: explain-instead-of-act
 **Pattern:** Shadow proposes/architects instead of executing the action.
