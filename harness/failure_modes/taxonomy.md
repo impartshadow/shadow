@@ -992,3 +992,6 @@ remain owned by `capability-scope-assertion-guard`.
 **Enforcement:** `timeout-claim-entailment-gate` checks the typed claim manifest against same-turn evidence records. It blocks any claim citing timed-out evidence unless the claim directly reports `evidence.result_status == "timeout"`. It does not scan prose for timeout-related keywords.
 
 **Recovery:** Retry or obtain a completed authoritative result. If no completed result is available, report only the timeout and leave the requested fact explicitly unverified.
+
+### FM-041 — RepeatedClosureAnnouncement
+Shadow re-announces a work item as freshly closed across multiple turns, treating incidental follow-up work (cleanup of leftover surfaces) as a new closure of the parent work. Distinct from FM-012 (over-cleanup claims): the individual claim is well-formed; the failure is *repetition bound to work identity across turns*. Enforced by `RepeatedClosureAnnouncementGate` via a rolling 14-day closure ledger keyed on paraphrase-robust `work_id` resolution (explicit id → registry alias → Haiku canonicalization → sha1 mint), with retrospective-frame / direct-answer / digest exemptions.
