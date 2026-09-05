@@ -37,5 +37,3 @@ If the same action type fires this contract 3+ times in a session, surface to th
 ## Relationship to existing contracts
 
 - `behavioral-haiku-guard` — post-check sibling; this contract fires pre-action
-- `self-consistency-check` — post-check; this contract fires pre-action on high-stakes actions only
-- `action-deferral-guard` — complementary; that catches proposal-text, this catches action-level inconsistency

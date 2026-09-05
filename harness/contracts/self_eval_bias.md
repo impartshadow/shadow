@@ -46,7 +46,7 @@ If Haiku-judged contract calls log confidence scores, a healthy judge shows spre
 
 Paper: *Neurodata Without Boredom* (arXiv cs.LG, May 2026) — general-purpose coding agents completed sub-tasks reliably but failed end-to-end pipelines without errors. Crucially: **agents-as-judges failed to catch errors when no ground-truth reference was provided**. Without an anchor to compare against, the judge evaluates plausibility rather than correctness.
 
-Shadow's `behavioral-haiku-guard` and `self-consistency-check` both use Haiku to evaluate a response in isolation — passing only the response text, not the original user request. This means Haiku can only judge internal coherence, not whether the response actually addressed what was asked.
+Shadow's `behavioral-haiku-guard` uses Haiku to evaluate a response in isolation — passing only the response text, not the original user request. This means it can only judge internal coherence, not whether the response actually addressed what was asked.
 
 ### Mitigation
 

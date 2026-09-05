@@ -55,10 +55,6 @@ gap-closer should narrow the pattern OR widen `_HANDOFF_MARKERS` rather
 than blanket-suppressing.
 
 **Related:**
-- `action-deferral-guard` (FM-011) — sibling, fires on proposing-instead-of-
-  executing in the same turn.
-- `self-verification` (FM-011) — warn-only, catches incompleteness markers
-  and re-invokes via Haiku.
 - CLAUDE.md Rule 39 — start receipts for in-flight work; if you have a
   legitimate background task, post `⏳ <task> · started · eta <when>` and
   the runtime footer will track it (then the continuation framing is OK).

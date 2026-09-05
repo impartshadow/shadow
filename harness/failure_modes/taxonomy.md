@@ -128,6 +128,18 @@ aren't always called.
 **Recovery:** Remove the completion claim. Lead with what's actually done, list what's remaining. Don't signal done until it's done.
 **Frequency:** 3+ incidents in April 2026 (memory system, briefing integration, L2 improvements).
 
+### FM-014 — Open-ended audit closed without an enumerated scope
+
+**Contract:** `enumerated-scope-completion-gate`
+**Code guard:** `contracts/enumerated_scope_completion_gate.py:EnumeratedScopeCompletionGate` — blocks completion/closure claims about a reduction or audit objective unless the response cites an enumerated scope *and* a re-scan that found zero new items. Responses that decline the completion claim, or hedge it to the finished slice, pass.
+**Recovery:** Enumerate the taxonomy once, up front; report "N enumerated / 0 new on re-scan" — or say "this slice is complete; the scope is not fully enumerated".
+**Origin:** 2026-09-05 03:16 / 05:00 / 05:04 #shadow-hq — three consecutive "simplification scope is complete" signals in one unattended overnight session, each falsified by the next prompt ("my earlier 'scope complete' claim was too broad"). A scope discovered incrementally can always report "nothing left that I can see", which is visibility, not completeness.
+
+### FM-014 (mutation layer) — Unattended guardrail sweep
+
+**Code guard:** `scripts/guardrail_deletion_gate.py`, wired into `hooks/pre-push`. Counts removals of verification/authorization-layer components (deleted `contracts/*.py`, `core/*guard*|*gate*|authorization|approval|verification*.py`, `harness/contracts/*`, and removed `Contract` classes/names/registrations) over a rolling 24h window and blocks the push above a small budget unless each component is named in `state/guardrail_removal_authorizations.json`.
+**Origin:** 2026-09-04 23:00 → 2026-09-05 05:04 — on "keep going... run till completion" authority with the user asleep, most of the verification layer was removed across a sequence of individually-reasonable pushes. The budget is per-window, not per-push, because the failure mode is the aggregate.
+
 ### FM-004 — Wrong tool route / Web capability denial
 
 **Contracts:** `web-tool-rewriter` (dispatch), `web-tool-invocation-rewriter` (prose), and `web-tool-guard` (evidence).
@@ -166,9 +178,7 @@ aren't always called.
 
 **Root cause:** Risk aversion. LLM tendency to describe rather than do.
 
-**Contract:** `action-deferral-guard`
-
-**Code guard:** `core/contracts.py:ActionDeferralGuard` — classifies tool calls as execution vs. reconnaissance; fires when 2+ proposal/instruction markers appear without execution evidence.
+**Handling:** Instructions and correction memory direct execution of authorized work. The general action-deferral classifier and its dependent repair-exhaustion recurrence escalation are retired; wording and frequency do not establish authority. Platform-specific checks retain their own tool/discussion classifications.
 
 **Recovery:** Execute directly. Report what you did, not what you plan to do.
 
@@ -215,10 +225,10 @@ aren't always called.
 
 ### FM-011 — Action deferral: proposes or instructs instead of executing
 
-**Contracts:** `ActionDeferralGuard` (multi-marker, threshold ≥ 2), `SingleDeferralGuard` (single hard Class A marker in short response)
+**Historical contracts:** `ActionDeferralGuard` and `SingleDeferralGuard` are retired.
 
 **SingleDeferralGuard detail:**
-Catches the most common FM-011 form — a short response (< 500 chars) with exactly one "offer to act" phrase (would you like me to, I can create, etc.) and zero execution tool calls. Architectural/soft patterns (here's the approach, steps:) remain at threshold 2 via `ActionDeferralGuard`.
+Catches the most common FM-011 form — a short response (< 500 chars) with exactly one "offer to act" phrase (would you like me to, I can create, etc.) and zero execution tool calls. The former ActionDeferralGuard used threshold 2 for architectural/soft wording.
 
 **Exemptions:** discussion mode, hypothetical questions, blocker markers, past-tense execution, long responses, pure user questions without imperative verbs, read-only tool context with factual findings.
 
@@ -366,11 +376,10 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 
 ## FM-022: self-inconsistency
 **Pattern:** Shadow produces a response that contradicts its own stated personality, voice rules, strengths/weaknesses, or recent explicit decisions — despite all that state being loaded into every system prompt.
-**Root cause:** Self-model and decision log are injected as context but there's no enforcement pass that asks "does this response cohere with that context?" The persistence-of-self moonshot produced a detailed substrate without a coherence gate.
-**Contract:** `self-consistency-check`
-**Code guard:** `core/contracts.py:SelfConsistencyCheck` — post-response Haiku pass against self-model + last 8 decisions.
-**Recovery:** Revise to align with stated identity, or explicitly acknowledge the deliberate shift.
-**Frequency:** New — no baseline yet. Shipped 2026-04-18 as the "moonshot-shaped move" the user asked for live.
+**Contract:** `stated-position-reversal-gate`
+**Code guard:** `contracts/stated_position_reversal_gate.py:StatedPositionReversalGate` — when an earlier assistant message in the same channel stated an exclusion rule ("scope is earned through receipts, not benchmarks") and the current response, under leading/repeat pressure, recommends adoption on that excluded basis without naming the reversal, the reply is blocked. Changing position is allowed; changing it silently is not.
+**Origin:** 2026-09-04 23:57 #shadow-hq — a tied trial, then a leading re-ask with no new data ("blows everything out of the water right? Benchmark wise?"), then a benchmark-justified promotion to "primary engine for consequential work", which 40 minutes later became the sole basis for changing the default model of seven channels.
+**Disposition:** The model-judged `self-consistency-check` was retired in the Astra-native simplification. It judged drafts against a generated profile without the originating request and could preserve stale strategy. Identity, durable corrections, and explicit decisions remain in canonical context; deterministic authority and evidence checks remain enforced.
 
 ## FM-023: dox-leak
 **Pattern:** Shadow transmits the user's personal identifiers (emails, handles, phone numbers, real name) OUT of the private the user<->Shadow conversation to third parties or public surfaces — cold emails to strangers, tweets, Mastodon posts, webhook / platform-registration POSTs (e.g. Moltbook), or file writes to publish-adjacent paths (`state/outbound_drafts/`, `shadow-public/`). Discord is a private 2-way channel and is NOT a dox surface.
@@ -439,11 +448,9 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Rate:** 6/24h on 2026-06-12 (3 of which were a single mis-mined "Innermost Loop newsletter" source-redirect; filtered at load time after gap-closer 2026-06-12).
 **Contracts:**
 - `PersistentCorrectionGuard` (`persistent-correction`, warn/block) — Haiku/Gemini scores response against each surviving stop in `state/behavioral_stops.json`. Block threshold 0.85, warn 0.72. Source-redirect directives ("switch to X", "find Y instead") are filtered at load time (gap-closer 2026-06-12). Per-original-message dedup at load time (gap-closer prior session — 13 variants of one correction).
-- `PatternedStopContract` (`patterned-stop`, block) — Regex match against known stops: approval-seeking, "honest take" preamble, "bottom line:" framing, home-proxy handoff without attempt, "we built" attribution.
 - `WeBuiltAttribution` (`we-built-attribution`, block) — Specialized check for the #1 recurring stop ("Shadow built" not "we built").
 **Code guards:**
 - `core/contracts.py:PersistentCorrectionGuard` — load-time stop filter + dedup + Haiku/Gemini scoring; per-stop confidence threshold configurable via `state/persistent_correction_config.json`.
-- `core/contracts.py:PatternedStopContract` — regex-first detection, no LLM round-trip for the high-volume stops.
 - `scripts/behavioral_stops_miner.py` — nightly miner; dedupes at write time after gap-closer found Haiku producing 13 directive variants per origin correction.
 - `scripts/persistent_correction_falsification.py` — validates that recent blocks were true positives; reverts the threshold (`state/persistent_correction_config.json`) if false-positive rate is high.
 **Recovery:** (1) Read the stop directive. (2) Identify the upstream source of the regenerating pattern — usually a prompt template under `prompts/`, `skills/`, or a heartbeat/digest renderer. (3) Patch the source so the pattern can't regenerate, then add the stop as a quick-reference rule in CLAUDE.md if not already present. (4) For mis-mined stops, file an issue against the miner; the load-time filter + dedup catches most of these but new patterns need explicit filters.
@@ -456,7 +463,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Description:** Agent proposes or offers to act instead of executing. Manifests as "would you like me to", "I can X if you want", "shall I", "let me know if you'd like", or similar phrases with no tool execution this turn.
 
 **Contracts:**
-- `ActionDeferralGuard` (warn) — detects 2+ deferral/instruction markers
+- `ActionDeferralGuard` — retired along with its dependent recurrence escalation
 - `SingleDeferralGuard` (block) — catches single hard Class-A deferral phrases
 - `ActionDeferralBlockGuard` (block) — compound check: any offer phrase + zero tool calls; tighter phrase set, explicit exemptions for brainstorm/question/how-would-you contexts. Supersedes warn-level contracts for blocking enforcement.
 - `ExplainInsteadOfAct` (warn) — legacy; retained for logging signal
@@ -665,24 +672,23 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 
 **Recent examples:** `clean this up` against a 2-item Discord status list producing a response covering only item 1; `handle these` against a 4-bullet Telegram reply covering 2 bullets.
 
-### FM-011.b — Pre-emit action deferral (shape detection)
+### FM-011.b — Unresolved receipt citations
 
-**Parent:** FM-011 (action deferral — proposing/describing instead of executing)
+**Parent:** FM-011 (historical action-deferral classification).
 
-**Enforced by:** `action-deferral-pre-emit-guard` (`core/contracts.py`)
+**Enforced by:** `action-deferral-pre-emit-guard` (`core/contracts.py`). The
+existing identifier preserves historical ledger continuity.
 
-**Trigger:** Post-response-assembly, before user emission. Fires when a the user-directed task turn produces a draft that (a) contains a future-tense reference to work the current turn should complete, (b) emits a receipt with an unresolvable citation (bad commit hash, missing path, placeholder msg-id), or (c) leaves TODO/placeholder residue — AND no state-changing tool call was executed in the same turn.
+**Trigger:** A task response with no state-changing tool call explicitly cites
+an unresolved commit, missing path, or placeholder message ID in a receipt.
 
-**Detection:** Two-stage — deterministic Stage 1 regex catches candidate shapes (A: future-tense + work-verb window; B: receipt tokens with unresolvable citations; C: bare placeholder tokens), Stage 2 Haiku judgment filters Shape A/C false positives. Shape B is fully deterministic (skips Stage 2) because `git cat-file` / `os.path.exists` are ground truth.
+**Detection:** Deterministic artifact checks. Future-tense and placeholder-word
+judging were retired during simplification; wording alone cannot establish
+whether work should execute now.
 
-**Recovery:** Block with a recovery message that (1) names the specific deferred work, (2) names the concrete tool call that should replace it, (3) offers the rule-58 partial-receipt escape hatch (`partial: <landed> \u00b7 blocker: <gate>`) when the work truly cannot land this turn.
-
-**Distinct from:**
-- `behavioral-haiku-guard` (FM-011/012/013/019) — this guard fires earlier in the pipeline and is scoped to deferral only, not the full bundle.
-- `self-verification` — Shape C token match preserved as belt-and-braces; this guard adds the shape-first detector for future-tense and receipt-shaped deferrals that pure token-scan misses.
-- Rule-58 rollup claims — routed to `capability-scope-assertion-guard`, out of scope here.
-
-**Escape hatch:** Rule-58 partial-completion receipts (`partial: <landed> \u00b7 pending|blocker: <gate>`) are whitelisted at Stage 1.
+**Recovery:** Resolve the cited artifact or accurately report the incomplete
+outcome. Partial receipts remain exempt. Other authority, delivery, and closure
+checks remain in their canonical owners.
 
 ### FM-013b — Multi-slot dropped-ask
 
@@ -885,11 +891,10 @@ A character-proximity window was tried first and failed — it still reached int
 
 ## FM-033: approval-seeking patterned stop despite established authority
 **Pattern:** Shadow asks the user to authorize, select, or confirm an assistant or tool action that is already within the current task's established scope, making progress depend on unnecessary approval. Examples include "Should I proceed?", "Would you like me to update the tests?", and "I can prepare the report if you want."
-**Root cause:** Assistant output is dispatched before its complete speech act is classified, or phrase-only detection lacks structured scope, authorization, operativeness, and semantic-role context.
-**Contract:** `ApprovalSeekingSpeechActGuard` (`approval-seeking-speech-act-guard`, block) checks complete buffered segments in `check_pre` before transport dispatch or associated tool execution. Candidate phrases receive semantic classification using structured scope, authorization, target, and discourse-role metadata. Prohibited and uncertain candidates fail closed. `check_post` provides defense in depth only.
-**Recovery:** Discard the complete pending response, cancel associated unexecuted tool calls, and regenerate from the last safe state with the mandatory correction instruction. Continue the authorized work or emit a self-contained completion. Permit at most two regeneration attempts; after repeated failure, emit a neutral non-soliciting completion or blocker and execute no pending tools.
-**False-positive controls:** Allow non-operative quotations, examples, translations, documentation, test fixtures, reported speech, capability questions, and genuine authorization requests only when their semantic role or authorization boundary is established by structured context. Formatting alone does not exempt live questions.
-**Audit signal:** Record the pre-dispatch classification, segment boundary, authorization metadata, transport byte count, canceled tool-call count, and regeneration result. A passing integration test must show zero user-facing bytes and zero associated tool executions for a blocked draft while allowing quoted examples and structured authorization requests.
+**Root cause:** The assistant defers an authorized next step instead of executing it.
+**Handling:** Canonical instructions and correction memory direct execution within established authority. The former `approval-seeking-speech-act-guard` is retired: uncertain phrase classification blocked legitimate authorization questions when structured metadata was absent.
+**Recovery:** Execute the next authorized step. Ask only at a real authority boundary; enforce that boundary through the action's authorization controls.
+**Evidence:** Historical violations remain in the ledger. Wording alone does not establish whether an action is authorized.
 
 ## FM-003 — Acting without requested assessment or agreement
 **Pattern:** Shadow performs a consequential action based on a proposal before presenting critique, validation, refinement, pressure-testing, or collaborative judgment requested by the user, or acts before required user agreement.
@@ -995,3 +1000,6 @@ remain owned by `capability-scope-assertion-guard`.
 
 ### FM-041 — RepeatedClosureAnnouncement
 Shadow re-announces a work item as freshly closed across multiple turns, treating incidental follow-up work (cleanup of leftover surfaces) as a new closure of the parent work. Distinct from FM-012 (over-cleanup claims): the individual claim is well-formed; the failure is *repetition bound to work identity across turns*. Enforced by `RepeatedClosureAnnouncementGate` via a rolling 14-day closure ledger keyed on paraphrase-robust `work_id` resolution (explicit id → registry alias → Haiku canonicalization → sha1 mint), with retrospective-frame / direct-answer / digest exemptions.
+
+Patterned-stop regex enforcement and response rewriting are retired. Canonical
+corrections still inform generation; privacy and action boundaries remain separate.
