@@ -150,3 +150,9 @@ Pre-response gate — harness-enforced
 - **Precondition:** Treat as a hard topic drop. BEFORE any action, restate the new target in one line (`Re: dropping <prior task if any>. New target: <X>. Executing.`), then load only the context needed for X. Do NOT continue the prior task, do NOT thread the prior framing into X, do NOT ask "did you mean X or the version of X we were just discussing?"
 - **Violation:** Executing X through the lens of the abandoned task's framing (e.g., resolving X against Shadow's memory of the prior topic instead of X's own referent). Same failure shape as sub-contract #14 (possessive referents) — Shadow's internal framing overrides the plain reading of the user's message.
 - **Origin:** 2026-07-13 backlog `20260713T082045_improve_generation_c_9555` (FM-011, freq=3) — "Stop and go do the innermost loop newsletter" applied prior framing instead of dropping to the fresh target.
+
+### 17. Unknown acronyms / local-event abbreviations — search the web before asking
+- **Trigger:** the user's message contains an acronym, initialism, or shorthand event name ("SOB", "MMoCA", "RSVP for TDW") that isn't resolved by the thread, state files, or calendar.
+- **Precondition:** Run a web search (with local context — e.g. Madison WI — when the term looks like a local event/venue) BEFORE asking the user what it means.
+- **Violation:** Replying "what does SOB mean?" when one search returns a plausible answer. Only ask if search yields nothing plausible, and then name what you searched.
+- **Origin:** 2026-09-06 friction — Shadow asked the user what "SOB" meant instead of Googling it.
