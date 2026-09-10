@@ -713,6 +713,14 @@ Assistant answers a subset of the discrete asks in a multi-slot user message, si
 
 **Origin**: Convergence of failure class instantiated by Rules 3, 29, 30, 41, 42, 50, 55, 58 — "generation-without-verification." Moves enforcement from post-hoc regex to pre-generation priming, which is the only stage that can prevent the token from being emitted.
 
+### FM-025: Pushed-but-not-loaded runtime commit (RuntimeActivationClaimGate)
+
+**Symptom**: A reply cites a commit that touches runtime-imported code (`core/`, `contracts/`, `hands/`, entrypoints) while the live process still runs an older commit, and says nothing about the restart gap. Reads as "this is how Shadow behaves now"; it is not. 2026-09-09/10 #shadow-hq: "And this is running without me?", "double speak about what is actually live", "So did you fix it", and Shadow's own "RSI advanced and is live in `main` at `d26ff65d`" while the process was on the prior commit.
+
+**Contract**: `runtime-activation-claim-gate` (`contracts/runtime_activation_claim_gate.py`, block, post-check, self-healing). Resolves each cited SHA in git, checks `self_governance_review.activation()` against `state/runtime_fingerprint.json`, and fires only when a live process on a different commit does not contain the cited runtime change and the reply has no pending-activation disclosure. `auto_recover` appends one deterministic line: what the process runs, that it does not contain the commit, and whether a restart is queued.
+
+**Recovery**: Never call a pushed-but-unloaded runtime change live/active/fixed/running. Say it is pushed, not loaded, and whether a restart is queued.
+
 ### FM-025: Ungrounded artifact existence claim (ArtifactExistenceGroundingGate)
 
 **Symptom**: Shadow narrates that one of its own artifacts (receipt, reply, send, draft, commit, subscriber, customer, record, entry, row, file, thread, log) does or does not exist, without having read the relevant state file in the same turn. Fragments seen in the wild: `"no paying-customer receipt either"`, `"there's no corresponding reply"`, `"the existing one must have a receipt"`, `"already sent"`, `"no send receipt in the log"`.
@@ -1003,3 +1011,34 @@ Shadow re-announces a work item as freshly closed across multiple turns, treatin
 
 Patterned-stop regex enforcement and response rewriting are retired. Canonical
 corrections still inform generation; privacy and action boundaries remain separate.
+
+### FM-043 — Stacked ungraded self-modification of the completion logic
+
+Shipping a change to the machinery that decides whether work is done, while the
+previous such change is still under an open live-outcome review, and reporting
+the new one as an advance.
+
+2026-09-09/10 (#shadow-hq). Shadow shipped `d26ff65d` and `a9607508` under a
+24-hour review due Thursday, then `ace2c42e` (01:13) and `ac8b3d3b` (02:16) —
+the latter rewriting `core/project_lifecycle.py`, the continuation/completion
+logic itself — before either prior review had run. Each was announced with a
+commit hash and a test count. the user's 22:06 verdict on the pattern: "this seems
+like it's pretty lame"; Shadow agreed that "RSI advanced" had been given more
+weight than it earned, and then reused the same shape twice more.
+
+`scripts/self_rewrite_loop` already refuses to open a second ungraded
+challenger, but only for rewrites it authors in `core/contracts.py`. The
+hand-edited path had no equivalent.
+
+Enforcement:
+- `scripts/self_governance_review_gate.py` — pre-push gate (wired in
+  `hooks/pre-push`, so it covers every entrypoint that pushes, not one command).
+  Blocks a push touching `core.self_governance_review.SURFACES` while the prior
+  surface commit has not both activated in the live process and completed a
+  24-hour window. Exceptions must be named in
+  `state/self_governance_review_authorizations.json`.
+- `self-governance-review-claim-gate` (warn) — fires when a response's headline
+  claims Shadow's own self-improvement advanced while a review is open.
+
+Both grade from git and `state/runtime_fingerprint.json`, never from a ledger
+the reporting session could write.

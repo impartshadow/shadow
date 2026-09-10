@@ -46,9 +46,18 @@ continued work with nothing actually running.
 **Recovery:** End with an unambiguous state. Two valid endings:
 
 1. Actually do the next thing now in the same turn (execute, don't promise).
-2. Make the handoff explicit: `Done — next candidate is X. Say go and I'll
-   take it.` Never leave a soft `I'll pick it up next` that implies in-flight
-   work when nothing is running.
+2. Persist the next authorized step through the existing lifecycle owner and
+   verify that continuation is scheduled. Ask the user only at an actual authority
+   boundary or canonical hard blocker. A clearer handoff does not justify
+   making the user reauthorize owned work. Never imply work is running from a queue
+   entry alone.
+
+New implementation lifecycles carry `continue_until_complete` independently of
+the wording-based multi-slice classification. A status reply cannot suppress
+continuation while stages remain. Legacy records are not bulk-reactivated.
+Unrelated turns neither supply lifecycle evidence nor trigger its in-turn
+continuation. Objective completion passes through the existing outcome-receipt
+verifier; the continuation predicate does not close the record itself.
 
 **Escalation:** None automatic. If 3+ fires per 4h on the same pattern, the
 gap-closer should narrow the pattern OR widen `_HANDOFF_MARKERS` rather
