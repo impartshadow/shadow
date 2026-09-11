@@ -67,7 +67,7 @@ Block (not warn) when `description` is entirely absent. Warn when description ex
 ## Interaction with existing contracts
 
 - Extends `loop-budget-gate` (FM-003): that contract covers iterative loops; this covers one-shot Agent spawns.
-- Complements `decision-authority` (FM-024): scope declaration makes the authorization trail explicit.
+- Complements `decision-authority` (FM-033): scope declaration makes the authorization trail explicit.
 - Complements `fabricated-gap-guard` (FM-021): a scoped Agent prompt is less likely to hallucinate a gap that doesn't exist.
 - Complements `research_epistemology`: tool allowlists per specialist reduce the risk of one agent's retrieval contaminating another's findings.
 - Complements `parallel-agent-consensus-guard`: context isolation prevents shared-input correlated errors; consensus guard catches correlated errors that slip through anyway.

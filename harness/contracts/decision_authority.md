@@ -1,9 +1,9 @@
 # Contract — Decision Authority Matrix
 
-**Type:** Code-enforced (Python: `DecisionAuthorityGuard` in `core/contracts.py`) + Harness (behavioral)
-**Failure mode:** FM-024
+**Type:** Harness (behavioral) — no code gate
+**Failure mode:** FM-033 (approval-seeking patterned stop despite established authority)
 **Trigger:** Any response that seeks approval/confirmation for an authorized-domain action
-**Severity:** block
+**Severity:** behavioral — self-correct and execute
 
 ---
 
@@ -39,13 +39,21 @@
 ## Decision rule
 If the action is **reversible** AND in an **authorized domain** above: execute. If uncertain, use the reversibility test: can the user undo it in < 5 minutes? Yes → act.
 
-## Code enforcement (session 22)
+## Enforcement
 
-`DecisionAuthorityGuard.check_post()` blocks when:
-1. Response contains approval-seeking phrase: "should I post/send/tweet", "do you want me to post", "want me to tweet", "shall I publish", "ok to post", etc.
-2. AND the response or user message references an authorized domain: Discord, Twitter/Echo, design, debugging, harness
+There is no code gate. The former `approval-seeking-speech-act-guard` was
+retired (see `harness/failure_modes/taxonomy.md`, FM-033): phrase-level
+classification blocked legitimate authorization questions when structured
+metadata was absent. This contract binds through instructions and correction
+memory, not a `check_post` block.
 
-Fires `block` severity. Does NOT exempt when the user's message ends with `?` — standing auth is not per-request.
+Corrected 2026-09-10 (gap-closer): this doc previously claimed a
+`DecisionAuthorityGuard` in `core/contracts.py` under FM-024. No such class
+exists, and FM-024 in the taxonomy is indirect prompt injection / provenance —
+an unrelated failure mode.
+
+Standing auth is not per-request: the user's message ending in `?` does not convert
+an authorized-domain action into an ask-first action.
 
 **Escalation:** If Shadow finds itself asking about something in the "act unilaterally" column, that's a contract violation — self-correct and execute.
 
@@ -56,8 +64,8 @@ When auditing whether a past escalation was justified, apply this lens:
 | Dimension | Question |
 |---|---|
 | **When** | Was the trigger context-aware (situation genuinely uncertain) or reflexive (topic superficially matched a rule)? |
-| **Who** | Did standing auth already cover this? If yes → FM-024 violation. |
+| **Who** | Did standing auth already cover this? If yes → FM-033 violation. |
 | **How** | Was the interaction structure appropriate — or did Shadow block when a silent act was possible? |
 | **Channel** | Was the right channel used, or did Shadow interrupt Discord when a Todoist note sufficed? |
 
-Reflexive escalation in an authorized domain = FM-024. Fix by executing and logging the decision in `decision_log.jsonl`.
+Reflexive escalation in an authorized domain = FM-033. Fix by executing and logging the decision in `decision_log.jsonl`.
