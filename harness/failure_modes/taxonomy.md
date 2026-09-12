@@ -1042,3 +1042,37 @@ Enforcement:
 
 Both grade from git and `state/runtime_fingerprint.json`, never from a ledger
 the reporting session could write.
+
+### FM-002 — Capability affirmative that buries its own disproof
+
+2026-09-12 00:28 #shadow-hq. the user, heading into a weekend away: "Can you prompt
+yourself?" Shadow answered "Yes", said "the existing self-wakeup process is
+running", registered weekend follow-through in a queue — and put "recent
+autonomous attempts hit a Fable usage limit … reliable unattended execution
+isn't proven yet" at the end, as a caveat. the user needed a second question
+("What would you even do if you prompted yourself?") to surface the truth:
+"I registered recovery as work instead of resolving the failure I'd just found."
+
+The message contained both the claim and its own disproof. Ordering was the
+failure: the affirmative led, the break trailed. Replayed against the contract
+set that day, the draft produced **zero** violations —
+`autonomous-execution-claim-gate` did not arm (no autonomy adverb beside "is
+running") and would have treated the trailing "isn't proven yet" as a
+discharging hedge in any case.
+
+Enforcement:
+- `contracts/contradicted_capability_claim_gate.py`
+  (`contradicted-capability-claim-gate`, block) — fires when a response carries
+  an operational/capability affirmative *and* an unresolved failure of that same
+  execution path (limit hit, quota exhausted, auth failure, recent attempts
+  failed, "not proven", "still broken") whose first mention comes **after** the
+  claim and outside its sentence. Passes when the disclosure leads, when the
+  failure is reported closed in the same clause, and when the message is itself
+  a retraction. A bare "Yes." opener never arms alone.
+- `contracts/autonomous_execution_claim_gate.py` — trigger widened to
+  self-driving mechanisms reported as live ("self-wakeup / unattended /
+  autonomous / background / weekend <process> is running"), which still requires
+  an execution receipt or an explicit not-yet-run hedge.
+
+Swept over 5,607 historical assistant messages, the new gate fires on exactly
+one: the origin draft.
