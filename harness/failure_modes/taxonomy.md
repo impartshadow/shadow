@@ -100,7 +100,7 @@ aren't always called.
 **Pattern:** Shadow proposes/architects instead of executing the action.
 **Root cause:** Risk aversion. LLM tendency to describe what it would do rather than doing it.
 **Contract:** `explain-instead-of-act`
-**Code guard:** `core/contracts.py:ExplainInsteadOfAct` — detects 2+ proposal markers without execution evidence.
+**Code guard:** `contracts/self_signed_change_execution_gate.py:SelfSignedChangeExecutionGate` — machinery defect signed off but not changed; `contracts/deferred_first_step_gate.py:DeferredFirstStepGate` — Shadow's own next step narrated in future/conditional tense ("My first action is to…", "I'd investigate…", "My plan: 1. …") on a turn with no tool call, edit, commit, or started/shipped receipt. (The former `ExplainInsteadOfAct` marker-count guard is retired.)
 **Recovery:** Execute the action directly. Report what you did, not what you plan to do.
 **Frequency:** 8+ deficiency entries in March-April 2026.
 
