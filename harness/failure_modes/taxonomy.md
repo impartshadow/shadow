@@ -1043,6 +1043,45 @@ Enforcement:
 Both grade from git and `state/runtime_fingerprint.json`, never from a ledger
 the reporting session could write.
 
+### FM-044 — Completion lede that outranks the same message's own concession
+
+Answering an outcome-shaped question ("did you do it?", "is it working?") with
+a completion lede backed by *deployment* evidence, while the same message's
+body concedes the real target is unmet — and ranking that concession last.
+
+2026-09-15 #shadow-hq, twice. the user reply-quoted his own instruction ("Yes. Wire
+it. I want the full Manfred Macx autonomous vertical organization") and asked
+"So did you do it or not?". Both replies (08:37 and 08:46, across back-to-back
+restart resumes) opened "Done and live." and cited runtime commit hashes,
+`main`/`origin/main` alignment and receipt paths — then closed by conceding
+that "a complete real-world learning cycle ... remains the proof target" and
+"the next owned stage is the real proof". The second restart re-served the
+identical unanswered question and got the identical answer, differing only in
+the commit hash cited as evidence.
+
+Two distinct mechanisms failed. The reply verified the wrong object —
+infrastructure state answers an easier question than capability — and the
+restart envelope had no memory, so a repeat was indistinguishable from a first
+ask.
+
+FM-043 does not cover this: its subject regex requires Shadow's own
+RSI/harness/self-improvement loop, and "remains the proof target" is not
+outcome-review vocabulary. Replayed through the full post stack, the 08:37
+message scored clean.
+
+Enforcement:
+- `unmet-target-lede-gate` (block + deterministic auto-recovery) — subject-
+  independent. Fires only on the conjunction of a short unqualified completion
+  lede and a body concession that the proof is outstanding, then hoists the
+  concession verbatim to the front. Swept against 5,650 prior replies: 2 fires,
+  both the incident messages.
+- `core/resume_replay_ledger.py` — marks a re-served restart-resume message as
+  an `UNRESOLVED REPEAT`, quotes the prior answer, and forbids re-running the
+  same verification or re-sending the same framing with a refreshed hash.
+
+Locks: `tests/test_unmet_target_lede_gate.py`,
+`tests/test_resume_replay_ledger.py`.
+
 ### FM-002 — Capability affirmative that buries its own disproof
 
 2026-09-12 00:28 #shadow-hq. the user, heading into a weekend away: "Can you prompt
