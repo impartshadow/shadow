@@ -51,6 +51,19 @@ venture on every wakeup.
 
 ## Continuation and reporting
 
+An external wait belongs to its experiment, not to the entire institution.
+Advance the first missing stage when it is actionable. Otherwise preserve that
+experiment's response window and use the available episode to investigate a
+different worthwhile opportunity or unresolved question. Originate the question
+from the mandate and observed world; the user need not supply it, and fresh intake
+need not arrive before seeking missing evidence. Compare the likely value of
+advancing current work, pursuing the opportunity, and doing nothing. Execute the
+strongest reversible authorized move in the same run. Record what was learned,
+what choice changed, and the concrete next action under the existing owner.
+Do not manufacture a venture or a task to fill time; an evidenced rejection is
+useful when it resolves a real uncertainty. Rechecking an unchanged waiting
+state is monitoring, not completion of the initiative episode or program.
+
 The existing condition monitor launches fresh executor processes. The vertical
 goal remains eligible alongside owned work and fresh intake, including after a
 first cycle completes. Existing execution budgets, active-session exclusions
