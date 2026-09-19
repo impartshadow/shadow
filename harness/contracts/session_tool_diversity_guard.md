@@ -22,7 +22,9 @@ Fires on `action == 'respond'` when session tool history is available.
 
 ## Enforcement
 
-Code-enforced in `core/contracts.py` (planned). Severity: `warn` (not block — legitimate power-user sessions can touch many tools).
+**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+
+Not code-enforced; prompt-level only (a gate was planned, never written). Severity: `warn` (not block — legitimate power-user sessions can touch many tools).
 
 ## Recovery
 

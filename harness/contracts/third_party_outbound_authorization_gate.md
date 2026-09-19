@@ -55,3 +55,8 @@ receipts on owned namespaces (`[public-handle]`, `[private-handle]`) are unaffec
 `contracts/third_party_outbound_authorization_gate.py`, auto-loaded by
 `core.contract_loader.load_all_dynamic()` at bot startup. Regression tests
 in `tests/test_third_party_outbound_authorization_gate.py`.
+
+## Enforcement
+
+**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+

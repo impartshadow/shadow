@@ -1,7 +1,7 @@
 # Contract: ci-loop-closure
 
 ## Type
-Post-push gate — code-enforced in `core/contracts.py:CILoopClosureContract`
+Post-push gate — **not code-enforced** (prompt-level self-check)
 
 ## Trigger
 Any `git push` action where `files_edited` is non-empty.
@@ -11,7 +11,9 @@ Any `git push` action where `files_edited` is non-empty.
 from `core/ci_loop.py`. The CI result must have `status == "green"` before Done is reported.
 
 ## Enforcement
-**Code-enforced** in `core/contracts.py:CILoopClosureContract`:
+**Not code-enforced.** No `CILoopClosureContract` class exists. Intended design was:
+**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
+
 - Missing `ci_result`: warn-severity (contract not yet wired into push workflow)
 - `status == "escalate"`: block-severity (do not declare Done)
 - `status == "green"`: passes

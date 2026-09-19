@@ -1,6 +1,6 @@
 # Contract: slot-collection-gate
 
-**Type:** Pre-check (code-enforced in `core/contracts.py`)
+**Type:** Pre-check (prompt-level; not code-enforced in `core/contracts.py`)
 **Failure mode:** FM-012 (platform action without pre-flight)
 **Class:** `WriteActionSlotGuard`
 
@@ -23,7 +23,10 @@ All required slots for the target action must be present in `ctx.tool_params` fo
 | Echo publish | `content` or `status` (non-empty, ≥ 10 chars) |
 
 ## Enforcement
-Code-enforced. `WriteActionSlotGuard.check_pre()` in `core/contracts.py` inspects `ctx.tool_calls` and `ctx.tool_params` for the pending write-action tool. If a matching tool is found with a missing required slot, returns a `block`-severity Violation.
+
+**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+
+`WriteActionSlotGuard.check_pre()` in `core/contracts.py` inspects `ctx.tool_calls` and `ctx.tool_params` for the pending write-action tool. If a matching tool is found with a missing required slot, returns a `block`-severity Violation.
 
 ## Recovery
 Collect the missing slot value explicitly from context or ask. Do not infer title from ambiguous context. Do not default dates to "now" without confirmation.

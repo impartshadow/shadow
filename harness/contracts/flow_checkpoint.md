@@ -20,7 +20,9 @@ Response text is non-empty and the action is a direct user-facing response (not 
 
 ## Enforcement
 
-Code-enforced in `core/contracts.py:FlowCheckpointContract.check_post()`.
+**Not code-enforced.** No `FlowCheckpointContract` class exists.
+**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
+
 
 ### Confidence Scoring
 

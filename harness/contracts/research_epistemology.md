@@ -1,7 +1,7 @@
 # Contract: research-epistemology
 
 ## Type
-Post-response guard — deterministic enforcement via `core/contracts.py`
+Post-response guard — **not code-enforced** (prompt-level self-check)
 
 ## Trigger
 Any response that presents research findings, factual claims, or synthesized analysis
@@ -17,7 +17,10 @@ When a response makes 2+ scientific or factual claims, ALL of the following must
    acknowledged in a "What's Uncertain" or equivalent section — not silently omitted
 
 ## Enforcement
-**Code-enforced** in `core/contracts.py:ResearchEpistemologyGuard` — scans outgoing
+**Not code-enforced.** No `ResearchEpistemologyGuard` class exists. Intended design:
+scan outgoing
+**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
+
 research-context responses for citation-absent multi-claim outputs and fires when
 no Sources section is present alongside 2+ factual assertion patterns.
 

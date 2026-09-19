@@ -15,6 +15,9 @@ Trajectory-Invariant Execution Rewards evaluate final state equivalence rather t
 Standard approaches to evaluating agent behavior penalize non-canonical paths even when they reach the correct end-state. This suppresses discovery of alternative strategies. TIER rewards outcome equivalence: if the goal is accomplished, the path is valid.
 
 ## Enforcement
+
+**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+
 `OutcomeEquivalenceGuard` in `core/contracts.py` — post-check observer that evaluates outcome achievement (heuristic + outcome signal emission).
 
 Emits to `state/outcome_equivalence_scores.jsonl` for session audit analysis:

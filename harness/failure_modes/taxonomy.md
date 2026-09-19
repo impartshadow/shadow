@@ -1115,3 +1115,49 @@ Enforcement:
 
 Swept over 5,607 historical assistant messages, the new gate fires on exactly
 one: the origin draft.
+
+### FM-034: Undisclosed timeout (silent drop of a timed-out probe)
+
+**Pattern:** An authoritative tool call times out mid-turn; Shadow answers anyway from state that predates the probe and never tells the reader the check failed to return. The output looks verified but is not — wrong output content produced while genuinely trying to answer correctly, which is the FM-034 signature.
+
+**Root cause:** A timeout is a non-result, but it arrives in the same slot as a result. Without a structural gate, the turn treats "no answer returned" as "nothing to report" and the response silently reverts to prior belief.
+
+**Contract:** `TimeoutDisclosureGate` (block, post-check on `respond`), `core/contracts.py`.
+
+**Code guard:** Timeouts are read only from structured fields on `ContractContext.tool_call_results` — `result_status == "timeout"`, `exit_code == 124`, or `error_type` in `{TimeoutExpired, TimeoutError, ReadTimeout, CommandTimeout}`. Result prose is never keyword-scanned, so a command whose output mentions "timeout" is not flagged. A timed-out call is exempt when a later call with the same tool and identical params succeeded (the retry, not the abandonment, is what the response describes).
+
+**Recovery:** Retry with a longer budget or narrower scope. If it still does not return, state that the operation timed out and name the fact that is therefore unverified. `auto_recover()` appends that disclosure line rather than dropping the response.
+
+**Boundary:** Complement to FM-014 `timeout-claim-entailment-gate`, which blocks claims that *cite* timed-out evidence. FM-034 here covers the inverse — a timeout with no citation at all.
+
+### FM-034.b — Negative conclusion inferred from a timeout
+
+**Parent:** FM-034 (undisclosed timeout / silent drop of a timed-out probe)
+
+**Pattern:** An authoritative probe times out, Shadow *discloses* the timeout, and then reasons from it to a terminal negative conclusion about the target — "the health check timed out, the API is down", "the lookup timed out, there is no such record." The disclosure satisfies FM-034 and the absence of a structured claim citation satisfies FM-014's `timeout-claim-entailment-gate`, so the turn passes both existing timeout gates while shipping an unsound inference.
+
+**Root cause:** A timeout is the absence of a result, not a negative result. The probe may have been slow, the budget too short, or the query too broad; none of that entails that the target is down, missing, or empty. The turn treats "no answer returned" as "the answer is no."
+
+**Contract:** `TimeoutNegativeInferenceGate` (block, post-check on `respond`), `core/contracts.py`.
+
+**Code guard:** Two-stage and deliberately narrow. The gate only arms on a structured, unresolved timeout in `ContractContext.tool_call_results` — `result_status == "timeout"`, `exit_code == 124`, or `error_type` in `{TimeoutExpired, TimeoutError, ReadTimeout, CommandTimeout}`. Result prose is never keyword-scanned. Only then is the response sentence-split and matched against terminal-negative predicates (down / offline / unreachable / does not exist / there is no / no such / nothing found / confirmed missing). Sentences carrying a hedge or explicit non-confirmation (`may`, `might`, `appears to`, `unverified`, `can't confirm`, `unknown`) are exempt — that is the correct shape. Two carve-outs prevent guessing: an identical successful retry supersedes the timeout, and any *other* successful call on the same tool stands the gate down, since a narrower retry that legitimately came back empty can ground the negative claim.
+
+**Recovery:** Retry with a longer budget or narrower scope and assert from what actually returned; otherwise restate the sentence as an open question — the probe timed out and the target's state is unverified. No `auto_recover()`: the defect is the content of the assertion, not a missing appendix, so appending a line cannot fix it and the block forces a rewrite.
+
+**Boundary:** Completes the timeout family. FM-014 `timeout-claim-entailment-gate` covers claims that cite timed-out evidence; FM-034 `timeout-disclosure-gate` covers a timeout with no mention at all; FM-034.b covers a timeout that is disclosed and then reasoned from.
+
+## FM-045: timeout-retry-loop
+
+**Pattern:** A tool call times out, and the next move is the same call again — same tool, byte-identical params, same budget. The retry runs the same work against the same deadline and times out again. Two or three rounds later the turn ends with no authoritative result, and the response is left either claiming from pre-probe state (FM-014) or disclosing a timeout that was never actually escalated against (FM-034).
+
+**Enforcement:** `TimeoutRetryBudgetGate` (`timeout-retry-budget-gate`, `check_pre`, severity `block`). A pending call is a violation only when `(tool, canonicalized params)` is byte-identical to an earlier `tool_call_results` entry that timed out and was never superseded by a later success with the same key. Timeout classification is delegated to `TimeoutDisclosureGate._is_timeout` / `._is_success` / `._call_key`, so structured fields (`result_status == "timeout"`, `exit_code == 124`, timeout `error_type`) are the only signal — result prose is never scanned.
+
+**Escape hatch is structural, not phrasal:** any change to the call — a raised `timeout`, a narrower path, a smaller page size, a split into steps — produces a different key and passes. There is no wording that bypasses the gate and no wording that trips it.
+
+**Relationship to the timeout triad:**
+- FM-014 / `timeout-claim-entailment-gate` — do not *claim* from a timed-out probe.
+- FM-034 / `timeout-disclosure-gate` — do not *hide* a timed-out probe.
+- FM-045 / `timeout-retry-budget-gate` — do not *repeat* a timed-out probe unchanged. Enforces the remedy the other two gates prescribe in their `recovery` text.
+
+**Recovery:** Raise the budget, narrow the scope, or split the call. If no cheaper form exists, stop retrying and state that the operation timed out and which fact is therefore unverified.
+

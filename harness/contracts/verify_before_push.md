@@ -1,7 +1,7 @@
 # Contract: verify-before-push
 
 ## Type
-Pre-push gate — deterministic enforcement via `core/contracts.py`
+Pre-push gate — **not code-enforced** (prompt-level self-check)
 
 ## Trigger
 Any response containing "Done." or "Pushed." or any `git push` command.
@@ -11,8 +11,16 @@ Response MUST contain a code block with verification command output matching
 the fix type. Mental verification is not verification.
 
 ## Enforcement
-**Code-enforced** in `core/contracts.py:VerifyBeforePush` — blocks push if no
-verification output detected in the response context.
+**Not code-enforced.** No `VerifyBeforePush` class exists in `core/contracts.py`.
+It exists only in `shadow-kit/shadow_kit/contracts.py` (the extracted product).
+A no-op `class VerifyBeforePush: pass` stub was committed to `core/contracts.py`
+to satisfy `tests/test_contract_guard.py`, and was removed 2026-09-18.
+
+Adjacent registered gates cover parts of this rule — `claim-verification`,
+`execution-evidence-guard`, `commit-hash-verification` — but no gate implements
+the pre-push verification-output precondition stated below.
+**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
+
 
 ## Verification commands by fix type
 

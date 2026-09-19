@@ -15,6 +15,8 @@ When `state/current_plan.json` exists with a `tasks` array containing at least o
 
 ## Enforcement
 
+**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+
 Block the response and return Violation (severity="block"):
 
 ```

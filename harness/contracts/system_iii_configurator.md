@@ -1,6 +1,6 @@
 # system-iii-configurator
 
-**Type:** Code-enforced pre-check (`core/contracts.py`)
+**Type:** Pre-check (prompt-level; not code-enforced)
 **Failure mode:** FM-030
 **Enforcement:** deterministic; no LLM calls; zero-latency
 
@@ -42,6 +42,8 @@ Pre-check fires on actions: `edit_file`, `git_commit`, `git_push`, `respond`.
 Score ≥ 0.65.
 
 ## Enforcement
+
+**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
 
 `warn`-severity only — the violation is logged and surfaced as a recovery hint
 but does not block execution.  Signals are appended to

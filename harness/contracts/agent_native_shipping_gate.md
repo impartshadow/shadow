@@ -1,6 +1,6 @@
 # agent-native-shipping-gate
 
-**Type:** Post-check (code-enforced, block severity, deterministic)
+**Type:** Post-check (prompt-level; not code-enforced, block severity, deterministic)
 **Failure mode:** FM-026 (claim-without-evidence — framing/artifact mismatch)
 **Trigger:** Every response (`ctx.action == "respond"`) ≥ 120 chars
 **Reference:** the user 2026-06-23 02:16 #moonshot incident:
@@ -53,3 +53,8 @@ unresolvable paths never fire.
   on outbound content.
 - `partial-evidence-flag` (FM-026) — sibling failure mode, fires on
   definitive claims with thin evidence.
+
+## Enforcement
+
+**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+
