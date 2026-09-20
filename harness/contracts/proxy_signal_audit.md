@@ -1,6 +1,6 @@
 # proxy-signal-audit
 
-**Type:** Static analyzer + CI regression test (test-enforced)
+**Type:** Static analyzer + CI regression test (test-enforced) + write-time pre-guard (code-enforced)
 **Failure mode:** FM-034 (factual errors: false "expired" / "stalled" / "blocked" alerts emitted from a proxy signal)
 **Trigger:** `python3 scripts/proxy_signal_audit.py` (also run by `tests/test_proxy_signal_audit.py` as a regression gate, and by `scripts/nightly.py` Phase 1.7a which posts any non-zero findings to `#shadow-log`)
 
@@ -12,6 +12,8 @@
 2. The mtime (or any variable derived from it through assignment chains) appears in the test of an enclosing `if` block.
 3. That `if` block contains a return/yield whose value carries a verdict-word string.
 4. The function does not call any real validator (`requests`, `httpx`, `urllib`, `subprocess`, `validator(...)`, `.verify(...)`, `live_check`, etc.).
+
+**Source door (`ProxySignalPreGuard`, `core/contracts.py`):** the same sieve runs at write time. `check_pre` intercepts `Write`/`Edit` targeting `scripts/*.py` or `core/*.py`, parses the text being written (dedenting once so indented `Edit` fragments parse), and calls `scan_tree` from the audit script directly — one detector, two enforcement points. `mtime` and `single_line` findings **block** the write; `quantity` findings are left to the audit. Unparseable fragments, allowlisted paths, and an import failure of the audit all fail open. Covered by `TestProxySignalPreGuard` in `tests/test_proxy_signal_audit.py`.
 
 The current findings count is pinned by the `BASELINE_FINDINGS` constant in `tests/test_proxy_signal_audit.py` (baseline 0 at introduction; `state/` is gitignored so the baseline rides with the test, not a JSON file). The `TestBaseline::test_audit_at_or_below_baseline` case fails the test suite if any new function regresses past the baseline.
 
