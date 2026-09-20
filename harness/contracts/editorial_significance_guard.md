@@ -18,6 +18,10 @@ Neither clause carries information. Each inflates the adjacent finding and
 performs candor — the same move as narrating surprise, pointed at importance
 instead of expectation.
 
+Also enforced here (2026-09-19): the `surprise_validation` banned openers
+themselves — "the finding I didn't expect", "what surprised me", "a bigger win
+than expected" — which until now were prompt-reminder prose with no gate.
+
 ## Why the existing rules missed it
 
 Two always-on prompt stops in `core/active_stops.py` cover neighbours:
