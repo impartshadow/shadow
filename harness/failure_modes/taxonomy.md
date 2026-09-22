@@ -1161,3 +1161,15 @@ one: the origin draft.
 
 **Recovery:** Raise the budget, narrow the scope, or split the call. If no cheaper form exists, stop retrying and state that the operation timed out and which fact is therefore unverified.
 
+
+## FM-046: flagged-resume-deployment-lede
+
+**Pattern:** A restart-resume envelope carries a flag that names deployment state as the wrong answer — `UNRESOLVED REPEAT` or `ALREADY ANSWERED IN CHANNEL`, both emitted by `core/resume_replay_ledger.py` — and the reply to that envelope still opens with commit hash, reconnect receipt, `origin/` sync or channel-load status. The content answer, when present at all, is ranked second. Observed 2026-09-21 09:17:18 #shadow-hq, twenty-five seconds after the envelope said in as many words not to "re-send the same framing with a refreshed commit hash."
+
+**Enforcement:** `FlaggedResumeDeploymentLedeGate` (`flagged-resume-deployment-lede`, `check_post`, severity `block`). Fires only on the conjunction of (1) a resume flag in `user_message` and (2) a deployment-state first substantive sentence after bare acknowledgement openers are dropped. Both flag strings originate in Shadow's own ledger, so no user phrasing can arm the gate.
+
+**Relationship to FM-044:** `unmet-target-lede-gate` owns the same ordering defect but requires the message's own body to concede an unmet proof target. The 09:17 reply conceded nothing and scored clean through the entire post stack. FM-046 keys on the *instruction in the turn's input* rather than a self-contradiction in the output.
+
+**Upstream mechanism:** `core/process_registry.py:resume_origin_channel()`. The resume anchor is the newest inbound message across all channels and peeling strips its `[Channel:]` tag, so channel-scoped closure/ledger/directive lookups queried `shadow-hq` for a #moonshot message and a settled anchor was replayed as unresolved work.
+
+**Recovery:** Lead with the flagged gap — the outcome or capability the user asked about, or a plain statement that it is not done and what is blocking it. Deployment receipts go underneath, if at all.
