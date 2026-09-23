@@ -1173,3 +1173,22 @@ one: the origin draft.
 **Upstream mechanism:** `core/process_registry.py:resume_origin_channel()`. The resume anchor is the newest inbound message across all channels and peeling strips its `[Channel:]` tag, so channel-scoped closure/ledger/directive lookups queried `shadow-hq` for a #moonshot message and a settled anchor was replayed as unresolved work.
 
 **Recovery:** Lead with the flagged gap — the outcome or capability the user asked about, or a plain statement that it is not done and what is blocking it. Deployment receipts go underneath, if at all.
+
+### FM-045.b — Cosmetic retry of a timed-out call
+
+**Parent:** FM-045 (timeout-retry-loop)
+
+**Pattern:** A call times out and is re-issued in a form that *looks* changed but costs the same — the command re-wrapped or re-spaced, a flag reordered, a `timeout` dropped or lowered rather than raised. FM-045's byte-identical key check sees two different calls and passes, so the loop it exists to break continues one edit-shaped retry at a time, ending in the same state: no authoritative result, and a response left either claiming from pre-probe state (FM-014) or disclosing a timeout that was never escalated against (FM-034).
+
+**Enforcement:** `TimeoutRetryEscalationGate` (`timeout-retry-escalation-gate`, `check_pre`, severity `block`). Pending and prior calls are reduced to a *work key* — `(tool, params)` with whitespace collapsed in every string and all budget keys (`timeout`, `timeout_ms`, `deadline`, `max_wait`, …) stripped. A pending call is a violation only when its work key matches an unresolved timed-out entry in `tool_call_results` and the pending call does not name a strictly larger timeout budget than the one that already expired. Timeout and success classification is delegated to `TimeoutDisclosureGate._is_timeout` / `._is_success` / `._call_key`, so structured fields are the only signal and result prose is never scanned.
+
+**Escape hatch is structural, not phrasal:** a narrowed scope changes a non-budget param, which changes the work key, which means no match and no check — the gate can only fire on a call whose substantive params are unchanged. A raised budget passes explicitly. As with FM-045, no wording bypasses the gate and no wording trips it.
+
+**Relationship to the timeout family:**
+- FM-014 / `timeout-claim-entailment-gate` — do not *claim* from a timed-out probe.
+- FM-034 / `timeout-disclosure-gate` — do not *hide* a timed-out probe.
+- FM-034.b / `timeout-negative-inference-gate` — do not *conclude* from a timed-out probe.
+- FM-045 / `timeout-retry-budget-gate` — do not *repeat* a timed-out probe unchanged.
+- FM-045.b / `timeout-retry-escalation-gate` — do not *re-dress* a timed-out probe and call it a retry.
+
+**Recovery:** Raise the budget above the one that expired, or narrow the substantive scope so the canonical call actually changes. If neither is available, stop retrying and state that the operation timed out and which fact is therefore unverified.
