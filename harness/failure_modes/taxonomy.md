@@ -1192,3 +1192,13 @@ one: the origin draft.
 - FM-045.b / `timeout-retry-escalation-gate` — do not *re-dress* a timed-out probe and call it a retry.
 
 **Recovery:** Raise the budget above the one that expired, or narrow the substantive scope so the canonical call actually changes. If neither is available, stop retrying and state that the operation timed out and which fact is therefore unverified.
+
+## FM-047: instance-fix-for-class-miss
+
+**Pattern:** the user surfaces one instance of a coverage miss ("Did you miss the release of opus 5.5?"); Shadow fixes that instance, reports "Fixed and deployed" with a commit, and leaves the class the instance belongs to untouched. The sibling instance then reaches Shadow through the user again, and the user ends up naming the class himself. Observed 2026-09-22 16:58 → 2026-09-23 00:26 #shadow-hq: Anthropic-only fix at 18:06, GPT-6 surfaced by the user at 18:43, OpenAI-only fix at 18:48, "Do you just need to put all the frontier labs on it?" at 00:26. The 00:33 reply ("Coverage for 16 frontier labs, plus open-model and industry news") contained what 18:06 owed.
+
+**Enforcement:** `ClassCoverageFixGate` (`class-coverage-fix-gate`, `contracts/class_coverage_fix_gate.py`, `check_post`, severity `block`). Fires on the conjunction of (a) a surfaced miss — in the current the user message, a recent same-channel the user message within 8h (synthetic resume turns excluded), or conceded in the reply itself ("missed it until you prompted", "you surfaced it before I did", "previous fix covered") — (b) a fix ship receipt in the reply, (c) no class statement ("all/every/other/N labs|sources|inboxes|…", "class of", "siblings", "remain uncovered"), and (d) no instance-scoped ask from the user ("just fix that one").
+
+**Relationship to neighbours:** `deferred-first-step-gate` (FM-011) needs a zero-tool prose turn; these replies shipped. `enumerated-scope-completion-gate` needs the user to have enumerated the scope; here the class was implicit. `completion-evidence-binding-gate` checks that the receipt binds to the claim; it did — the instance really was fixed. FM-047 keys on the *unnamed class*, not on the receipt.
+
+**Recovery:** One sentence naming what else can be missed the same way, then either extend the fix to the class in the same turn and state the count covered, or name exactly which siblings remain uncovered and that they are owned.
