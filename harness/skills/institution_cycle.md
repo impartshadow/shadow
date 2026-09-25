@@ -31,6 +31,11 @@ venture on every wakeup.
    or replay old outbound proposals. Reconcile each recipient and endpoint
    against current authority before any external action. Research-only probes
    may prepare artifacts; delivery requires applicable explicit instructions.
+   Treat an explicit access or authorization denial as a terminal boundary for
+   that action path. Do not search for an alternate route around the denial;
+   resume only when the authority source changes or the resource owner supplies
+   a permitted path. Availability failures may use documented recovery paths,
+   but they must not be reclassified as permission to bypass a boundary.
    Use `spawn_experiments.create/launch_variants` only when its existing evidence
    conditions actually hold. Do not fabricate a cohort or outcome to pass them.
 4. **Settle and learn.** Verify actual outcome evidence. Use

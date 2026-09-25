@@ -36,6 +36,11 @@ The routing was correct throughout (`gpt-6-astra`, `channel_primary` — see
 window are `web_search`/`test` call sites, not conversational turns). This is
 a mode-selection failure, not a model or routing failure.
 
+2026-09-24 #moonshot recurrence: "This is over indexing on math proofs"
+(02:35) and "Still not right" (02:41) were two signals six minutes apart, but
+only the second matched `_DISSATISFACTION`, so the streak stopped at 1 and the
+gate never engaged. `over-indexing` and `still indifferent` now count.
+
 ## Relationship to neighbouring gates
 
 - [pushback_reverification_gate](../../contracts/pushback_reverification_gate.py)
