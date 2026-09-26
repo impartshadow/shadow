@@ -1202,3 +1202,13 @@ one: the origin draft.
 **Relationship to neighbours:** `deferred-first-step-gate` (FM-011) needs a zero-tool prose turn; these replies shipped. `enumerated-scope-completion-gate` needs the user to have enumerated the scope; here the class was implicit. `completion-evidence-binding-gate` checks that the receipt binds to the claim; it did — the instance really was fixed. FM-047 keys on the *unnamed class*, not on the receipt.
 
 **Recovery:** One sentence naming what else can be missed the same way, then either extend the fix to the class in the same turn and state the count covered, or name exactly which siblings remain uncovered and that they are owned.
+
+## FM-048: self-reported-tool-failure-posted-as-result
+
+**Pattern:** An autonomous job dispatches an agent; the agent's reply says its own sandbox, permissions or tooling prevented the work ("the sandbox blocked access to Shadow's repository"). The runner sees exit 0 plus non-empty text and publishes the prose as the job's result. the user becomes the exception detector ("Been awhile since you've failed to pull something") and the router ("Can you fix"). 2026-09-25 #research innermost-loop dive.
+
+**Enforcement:** `core.engineering_dispatch.self_reported_tool_failure` flags the sentence (first-person or sandbox context + failure verb + tooling target, third-party subjects excluded); `dispatch()` records it in `state/engineering_dispatch_log.jsonl` and returns it as `self_reported_failure`. `scripts.ai_digest._ask_repo_grounded` withholds such output, queues an impact:high repair via `core.diagnosis_followthrough.capture_autonomous_tool_failure` (drained by queue_processor), and raises so the item is retained for retry. Nothing is posted to #research.
+
+**Relationship to neighbours:** `self-diagnosis-execution-gate` (FM-011) governs Shadow's conversational replies; this covers dispatched-agent output before it becomes a post. `timeout-disclosure-gate` (FM-034) covers a runner that never returned; here the runner returned successfully with a failure narrative.
+
+**Recovery:** Treat the agent's account of being blocked as a failure receipt: withhold the output, queue the dispatch-path repair, retry the job after the fix, and only then publish.
