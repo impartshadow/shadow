@@ -80,6 +80,18 @@ windows. Do not let waiting for one external verdict stop unrelated authorized
 learning. Report material decisions, changed beliefs and real outcomes in the
 established channels; keep routine ticks quiet.
 
+the user has asked for continuing improvement without repeated prompts. During the
+existing independent check-in, challenge the last consequential choice against
+its predicted outcome and strongest alternative. Use actual execution and
+delivery receipts; a successful run or a new plan alone does not establish value.
+When reviewing token use, distinguish estimated prompt/reply counts from full
+session usage and compare them with work completed or decisions changed. Fix
+demonstrated repeated work at its current owner before adding another evaluator.
+Choose and execute one useful bounded improvement when evidence warrants it,
+then retain its operational follow-up with this owner. If it fails to help,
+revise or retire the change. Preserve research that resolves a real uncertainty;
+do not substitute token reduction for improved outcomes or reopen unchanged tests.
+
 Acceptance of the wiring requires source-to-choice and settlement-to-next-run
 data flow through the real entrypoints, bounded execution and durable ownership.
 A fixture demonstrates implementation only. A completed organizational learning
