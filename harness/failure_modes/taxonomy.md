@@ -1212,3 +1212,14 @@ one: the origin draft.
 **Relationship to neighbours:** `self-diagnosis-execution-gate` (FM-011) governs Shadow's conversational replies; this covers dispatched-agent output before it becomes a post. `timeout-disclosure-gate` (FM-034) covers a runner that never returned; here the runner returned successfully with a failure narrative.
 
 **Recovery:** Treat the agent's account of being blocked as a failure receipt: withhold the output, queue the dispatch-path repair, retry the job after the fix, and only then publish.
+
+### FM-014.f — Claim derived from evidence that timed out by exit code or error type
+
+**Parent:** FM-014.e (claim derived from timed-out evidence)
+
+**Failure:** A claim cites an evidence record that did time out (`exit_code == 124` or a timeout `error_type` such as `TimeoutExpired`) but whose `result_status` is missing or says `completed`. `timeout-claim-entailment-gate` recognises only `result_status == "timeout"`, so the claim is emitted as fact, even though every other timeout-family gate would classify the same record as timed out.
+
+**Enforcement:** `timeout-evidence-classification-gate` (block) applies the FM-014.e entailment rule using the family's shared classifier (`TimeoutDisclosureGate._is_timeout`). It fires only on records where `result_status != "timeout"`, so it never double-reports with FM-014.e. When structured fields conflict, the timeout signal wins. The only permitted claim is a `direct` report of the record's own timeout signal (`evidence.exit_code == 124` or `evidence.error_type`). Result prose is never keyword-scanned.
+
+**Recovery:** Treat the record as timed out whatever its status label says. Retry with a larger budget or a narrower scope; otherwise report the timeout and leave the fact explicitly unverified.
+
