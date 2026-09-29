@@ -1219,7 +1219,9 @@ one: the origin draft.
 
 **Failure:** A claim cites an evidence record that did time out (`exit_code == 124` or a timeout `error_type` such as `TimeoutExpired`) but whose `result_status` is missing or says `completed`. `timeout-claim-entailment-gate` recognises only `result_status == "timeout"`, so the claim is emitted as fact, even though every other timeout-family gate would classify the same record as timed out.
 
-**Enforcement:** `timeout-evidence-classification-gate` (block) applies the FM-014.e entailment rule using the family's shared classifier (`TimeoutDisclosureGate._is_timeout`). It fires only on records where `result_status != "timeout"`, so it never double-reports with FM-014.e. When structured fields conflict, the timeout signal wins. The only permitted claim is a `direct` report of the record's own timeout signal (`evidence.exit_code == 124` or `evidence.error_type`). Result prose is never keyword-scanned.
+**Status:** NOT ENFORCED — gate generated 2026-09-27 but refused by the tripped self-commit ratchet; quarantined at `artifacts/ratchet_quarantine/2026-09-27_TimeoutEvidenceClassificationGate.patch` pending the user's review.
+
+**Proposed enforcement:** `timeout-evidence-classification-gate` (block) would apply the FM-014.e entailment rule using the family's shared classifier (`TimeoutDisclosureGate._is_timeout`). It fires only on records where `result_status != "timeout"`, so it never double-reports with FM-014.e. When structured fields conflict, the timeout signal wins. The only permitted claim is a `direct` report of the record's own timeout signal (`evidence.exit_code == 124` or `evidence.error_type`). Result prose is never keyword-scanned.
 
 **Recovery:** Treat the record as timed out whatever its status label says. Retry with a larger budget or a narrower scope; otherwise report the timeout and leave the fact explicitly unverified.
 
