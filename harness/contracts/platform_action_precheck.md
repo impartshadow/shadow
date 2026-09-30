@@ -50,7 +50,9 @@ Discussion-mode responses (`ActionDeferralGuard._DISCUSSION_MARKERS` matches) ar
 ## Escalation
 Surface to the user only when the action falls outside standing authority — e.g., a new paid
 integration, a destructive action on a shared channel, or auth requiring his hands
-(CAPTCHA / 2FA / account creation). Everything else executes under standing authority.
+(CAPTCHA / 2FA / SMS verification actually hit during an attempted flow). Creating an account
+for a service Shadow operates is standing authority, not a blocker. Everything else executes
+under standing authority.
 
 ## Related contracts
 - `action_deferral_guard.md` — describes-instead-of-executes pattern (same failure family)
