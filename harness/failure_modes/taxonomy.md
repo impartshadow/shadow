@@ -1225,3 +1225,13 @@ one: the origin draft.
 
 **Recovery:** Treat the record as timed out whatever its status label says. Retry with a larger budget or a narrower scope; otherwise report the timeout and leave the fact explicitly unverified.
 
+
+## FM-049: forward-only-remedy-for-standing-claim
+
+**Pattern:** Shadow names a concrete risk that could invalidate an answer it already delivered, then scopes the remedy to future inputs ("For the next screenshot, I should validate the tile mapping…") and leaves the delivered answer standing as fact. Observed 2026-10-03 #osrs: at 14:02 Shadow named tile misrecognition as the risk to "61 clicks", deferred validation to "the next screenshot", and closed on "61 is unusually long but plausible". The 61 was retracted only after the user's "That should just be base functionality" (16:00), and corrected to 27 only after "How can you not differentiate similar tiles?" (21:25).
+
+**Enforcement:** `ForwardOnlyRemedyGate` (`forward-only-remedy-gate`, `contracts/forward_only_remedy_gate.py`, `check_post`, severity `block`). Fires on the conjunction of (a) a named risk to a standing answer ("the remaining uncertainty is", "if even one … was misidentified", "would describe the wrong …"), (b) a verification remedy scoped to future inputs ("for the next …", "next time", "going forward", "from now on"), (c) no re-verification ("I re-ran / re-checked the current …") and no retraction or downgrade ("retract", "treat … as unverified", "not yet verified"), and (d) no forward-only ask from the user. Tool calls do not exempt: the 14:02 turn did research, just not on the at-risk claim. Replay over 6,067 transcript replies: 1 hit, the origin draft.
+
+**Relationship to neighbours:** `pushback-reverification-gate` (FM-002) needs an explicit challenge phrase plus reaffirmation; the user's "I didn't think their silver went above like 40 moves" is neither. `deferred-first-step-gate` (FM-011) needs a zero-tool turn. `self-signed-change-execution-gate` needs a machinery defect signed off; here the risk was conditional.
+
+**Recovery:** Apply the check to the answer already delivered in the same turn and report the confirmed or corrected result; if it cannot run now, state that the delivered answer is unverified (or retract it). Only then add the forward-looking fix.
