@@ -1235,3 +1235,13 @@ one: the origin draft.
 **Relationship to neighbours:** `pushback-reverification-gate` (FM-002) needs an explicit challenge phrase plus reaffirmation; the user's "I didn't think their silver went above like 40 moves" is neither. `deferred-first-step-gate` (FM-011) needs a zero-tool turn. `self-signed-change-execution-gate` needs a machinery defect signed off; here the risk was conditional.
 
 **Recovery:** Apply the check to the answer already delivered in the same turn and report the confirmed or corrected result; if it cannot run now, state that the delivered answer is unverified (or retract it). Only then add the forward-looking fix.
+
+## FM-050: admitted-causal-gap-shipped-as-answer
+
+**Pattern:** the user asks why something is happening; Shadow's reply admits the cause is unestablished ("I haven't established which factor explains…") and ships that as the stopping point while a candidate factor it could check locally stays unchecked. Observed 2026-10-04 #shadow-hq: "Why isn't 6.1 sol available?" → Shadow cited OpenAI's account/client/workspace factors and stopped; the client factor (Codex CLI 0.153.3, stale) was one command away and surfaced only after the user's "Fix this". Upstream, the 15:32/15:39 answers treated the CLI-written catalog as authoritative without checking the CLI.
+
+**Enforcement:** `UnestablishedCauseGate` (`unestablished-cause-gate`, `contracts/unestablished_cause_gate.py`, `check_post`, severity `block`). Fires on (a) a cause question from the user, (b) an admitted causal gap in the reply, (c) no ruled-out/checked candidates, (d) no external-only remainder ("only OpenAI can confirm"). Replay over 6,090 transcript replies: 1 hit, the origin draft. Mechanism side: `core.model_routing_policy.codex_catalog_status()` / `scripts/model_availability_check.py --live` walk CLI version → catalog writer/freshness → family selection and report `authoritative: false` when the catalog's CLI is behind stable or unchecked.
+
+**Relationship to neighbours:** `forward-only-remedy-gate` (FM-049) needs a remedy deferred to future inputs; here nothing was deferred, the reply just stopped. `deferred-first-step-gate` needs a zero-tool turn.
+
+**Recovery:** Enumerate candidate causes, check every locally checkable one (start upstream: local tool/client/cache versions), report what was ruled out, and leave a gap only for factors owned by a named outside party.
