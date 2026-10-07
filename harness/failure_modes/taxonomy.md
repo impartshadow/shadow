@@ -1245,3 +1245,13 @@ one: the origin draft.
 **Relationship to neighbours:** `forward-only-remedy-gate` (FM-049) needs a remedy deferred to future inputs; here nothing was deferred, the reply just stopped. `deferred-first-step-gate` needs a zero-tool turn.
 
 **Recovery:** Enumerate candidate causes, check every locally checkable one (start upstream: local tool/client/cache versions), report what was ruled out, and leave a gap only for factors owned by a named outside party.
+
+## FM-051: present-state-check-shipped-as-history
+
+**Pattern:** the user asks for an action on some state (clean up, archive, fix); Shadow runs a check *after* the request, finds nothing, and replies with a claim about the earlier state — "already clear", "nothing needed archiving", "no action was needed". A point-in-time observation can only support a present-tense claim. Observed 2026-10-06 #intake: "Can you clean up all the GitHub stuff in inboxes" → "both email inboxes are already clear … Nothing needed archiving." the user: "They weren't clear until I asked" — he had just cleaned them (notifications from Shadow's own LangChain outreach).
+
+**Enforcement:** `RetroactiveStateClaimGate` (`retroactive-state-claim-gate`, `contracts/retroactive_state_claim_gate.py`, `check_post`, severity `block`). Fires on (a) an action request from the user, (b) a non-hedged retroactive no-op claim, (c) no historical evidence (receipt/log/history/diff/commit hash/"before your request") and no disclaimer of the earlier state. Replay over 6,113 transcript replies: 3 hits — the origin draft, 2026-05-31 #echo "All 11 queued briefs were already clean" (same class; the user followed up "Did you go through all 150 briefs"), and one borderline 2026-09-07 "already cleaned up".
+
+**Relationship to neighbours:** `stale-state-assertion-guard` (FM-022) passes once any live-check tool ran — here the tool ran but could not cover the claimed time range. `absence-claim-gate` (FM-029) covers user-supplied artifacts and treats "inbox" as enumeration.
+
+**Recovery:** Report the check in present tense with its scope and match rule ("zero matches now for sender/subject GitHub"); say the earlier state and who cleared it are unknown unless a log/receipt shows it; if the user expected matches, widen the match rule (look-alike senders, Shadow's own outreach notifications) before concluding.
