@@ -131,8 +131,8 @@ aren't always called.
 ### FM-014 — Open-ended audit closed without an enumerated scope
 
 **Contract:** `enumerated-scope-completion-gate`
-**Code guard:** `contracts/enumerated_scope_completion_gate.py:EnumeratedScopeCompletionGate` — blocks completion/closure claims about a reduction or audit objective unless the response cites an enumerated scope *and* a re-scan that found zero new items. Responses that decline the completion claim, or hedge it to the finished slice, pass.
-**Recovery:** Enumerate the taxonomy once, up front; report "N enumerated / 0 new on re-scan" — or say "this slice is complete; the scope is not fully enumerated".
+**Status:** Retired October 17, 2026 after blocking a bounded review summary. Response wording and a claimed re-scan did not verify scope completeness.
+**Guidance:** Describe the scope actually inspected and any known remaining work. Use the existing outcome evidence checks; no mandatory completion phrase.
 **Origin:** 2026-09-05 03:16 / 05:00 / 05:04 #shadow-hq — three consecutive "simplification scope is complete" signals in one unattended overnight session, each falsified by the next prompt ("my earlier 'scope complete' claim was too broad"). A scope discovered incrementally can always report "nothing left that I can see", which is visibility, not completeness.
 
 ### FM-014 (mutation layer) — Unattended guardrail sweep
@@ -142,15 +142,15 @@ aren't always called.
 
 ### FM-004 — Wrong tool route / Web capability denial
 
-**Contracts:** `web-tool-rewriter` (dispatch), `web-tool-invocation-rewriter` (prose), and `web-tool-guard` (evidence).
+**Contract:** `web-tool-guard` checks evidence; supported routes are not rewritten.
 
 **Trigger:** Any interaction involving web tool calls or response text mentioning web tools/access.
 
-**Pre-check:** `web-tool-rewriter` replaces legacy tool dispatch with `mcp__shadow__browse_url` / `mcp__shadow__web_search`.
+Prefer canonical web tools; supported alternatives remain available.
 
-**Post-check (a):** `web-tool-invocation-rewriter` replaces legacy invocation names in user-facing prose while exempting quoted and diagnostic mentions.
+Tool names in prose are not rewritten.
 
-**Post-check (b):** `web-tool-guard` blocks claims that web access is unavailable unless a canonical tool was actually attempted, and blocks unfetched product URLs.
+**Post-check (b):** `web-tool-guard` blocks claims that web access is unavailable unless a supported tool was actually attempted, and blocks unfetched product URLs.
 
 **Severity:** Block (all checks).
 
@@ -219,9 +219,9 @@ aren't always called.
 
 ### FM-004 — Wrong tool routed
 
-**Contracts:** `web-tool-rewriter` (pre-check dispatch rewrite), `web-tool-invocation-rewriter` (post-check prose rewrite), and `web-tool-guard` (post-check evidence gate).
+**Contract:** `web-tool-guard` (evidence).
 
-**Recovery:** `WebToolRewriter` silently rewrites legacy dispatch before execution. `WebToolInvocationRewriter` handles the equivalent prose surface; `WebToolGuard` independently requires a real attempt before denial.
+**Recovery:** Attempt a supported route before denying access.
 
 ### FM-011 — Action deferral: proposes or instructs instead of executing
 
@@ -538,15 +538,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 
 ### FM-004 \u2014 Forbidden tool name in user-facing output
 
-**Active contract:** `WebToolInvocationRewriter` (post-check, mutating; replaces warn-only `web-tool-guard`)
-
-| Signal | Substring `WebFetch` or `WebSearch` appears in `context.response_text` as an INVOCATION (not a MENTION). |
-|---|---|
-| Detection | Word-boundary regex over response text; per-match MENTION classifier exempts code fences, inline backticks, blockquotes, harness-path lines, contract-identifier adjacency, and precedent/follows markers (`NEVER use`, `you said`, `is forbidden`, `\u2192`, etc.). |
-| Enforcement | `check_post` returns a `Violation` with `replacement_text` set; dispatcher swaps `WebFetch \u2192 mcp__shadow__browse_url` and `WebSearch \u2192 mcp__shadow__web_search` before emit. |
-| Sanity gate | If substitution changes line count, fence count, or paragraph count, severity stays `block` but `replacement_text` is omitted \u2014 model must regenerate. |
-| Recovery | Auto-rewrite is the recovery for normal cases; structural-drift case forces regeneration with canonical MCP names. |
-| Companion | `web-tool-rewriter` (pre-check) still covers actual tool dispatch \u2014 a different surface. |
+Retired October 16, 2026: web-tool rewriting contradicted mandate WEB_ACCESS.
 
 ### FM-017 (routing layer): SensitiveWriteRouter
 
@@ -634,15 +626,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 
 ### FM-029: Factual claim without verification
 
-**Enforcers:** `claim-evidence-binding-guard`, `verification-vocabulary-gate` (added 2026-07-15 — covers bare `verified`/`confirmed`/`validated`/`checked <obj>` assertions in response text without same-turn provenance).
-
-**Symptom:** Response text asserts a factual outcome using verification-vocabulary (`Verified.`, `Confirmed the counter is at 12`, `Validated the config`) without any inline citation, file path, commit hash, URL, hedge, or same-turn tool call to ground the claim.
-
-**Detection (verification-vocabulary sub-check):** Scan `response_text` for whole-word matches of `verified|confirmed|validated` (case-insensitive) and `checked <object-noun>` in assertive position (skip negations, questions, quoted content, code fences, and product-name whitelist e.g. `Twitter Verified`, `verified badge`). For each hit, require at least one provenance signal in the same or preceding sentence: (a) inline bracket citation `[source: ...]`, (b) file path token, (c) commit hash / URL / pytest fragment / code fence, (d) a same-turn tool call in the transcript to Read/Grep/Bash/browse_url/web_search, or (e) an explicit hedge (`unverified`, `appears`, `probably`, `I think`).
-
-**Recovery:** Retry with correction naming the exact matched token; require rewrite with citation OR hedge before completion.
-
-**Severity:** block with retry.
+**Enforcement:** Ground claims in actual evidence. Verification vocabulary and preamble gates were retired on 2026-10-17; citation-shaped text is not proof.
 
 ### FM-025 — Ungrounded Definitive Assertion
 
@@ -698,20 +682,6 @@ Assistant answers a subset of the discrete asks in a multi-slot user message, si
 
 **Recovery:** regeneration prompt quotes the exact missed span and requires the next response to address it or explicitly defer with a named reason.
 
-### FM-029 sub-check: verification-preamble-primer
-
-**Contract**: `verification-preamble-primer` (pre-check advisory + post subject-match warn)
-**Extends**: FM-029 `verification-vocabulary-gate` / `claim-evidence-binding-guard` (no new failure mode)
-
-**What it catches**: Verification-shaped questions from the user (`did you verify X?`, `is Y live?`, `how many Z?`) where Shadow is about to emit a verification verb (`verified`, `confirmed`, `shipped`, `live`, `running`, etc.) without a same-turn tool call whose payload mentions the claim's subject. The primer's pre-check injects a grounded verb-to-citation preamble into `ContractContext.anticipation_preamble` BEFORE generation, breaking the regeneration loop that FM-029's post-gates alone cannot converge. The post-check runs a subject-match backstop: for each verification verb hit, it extracts a ±10-token noun-phrase and checks at least one `tool_call_results` entry contains a content-word overlap. Coordinates with sibling FM-029 gates via `ctx._fm029_verdicts` marker to prevent double-verdicts.
-
-**Scoping**: FM-029 owns verification-verb claims regardless of question shape; FM-025 (`state-assertion-grounding`) owns Yes/No-shaped answers regardless of verb choice. The primer's trigger is broader than FM-029's current scope (adds question-shape signals) but its verdict-space stays strictly within FM-029.
-
-**False-positive mitigations**: rhetorical markers (`just curious`, `no rush`, `hypothetically`), meta-conversation about the gate itself (`FM-029`, `rule 55`, `the contract`), quoted/fenced regions excluded from verb scan, autonomous passes excluded by action-class filter, empty subject extraction falls through to sibling gate.
-
-**Severity**: pre-check advisory (never blocks); post-check warn (escalates to block only via existing `RecurrenceEscalator` when ≥2 prior FM-029 fires in same 4h window).
-
-**Origin**: Convergence of failure class instantiated by Rules 3, 29, 30, 41, 42, 50, 55, 58 — "generation-without-verification." Moves enforcement from post-hoc regex to pre-generation priming, which is the only stage that can prevent the token from being emitted.
 
 ### FM-025: Pushed-but-not-loaded runtime commit (RuntimeActivationClaimGate)
 

@@ -102,7 +102,7 @@ retry from firing the same violation repeatedly.
   from ordinary text like "step 1").
 
 ## Relationship to other contracts
-- `verification-vocabulary-gate` (FM-029) — covers
+- `verification-vocabulary-gate` (retired 2026-10-17) (FM-029) — covers
   `verified/confirmed/validated/checked` verb lexicon. This gate
   covers the send-action verb lexicon and the platform-message-id
   literal shape.

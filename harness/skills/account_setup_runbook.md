@@ -61,7 +61,7 @@ Use `core/state_io.py` for reads/writes.
 1. **Triage**: First mention of a service setup → check `state/account_runbooks.json` for an existing entry. If none, create one with `status=pending`, capture `purpose` and an explicit `next_action`.
 2. **Pre-flight before any human ask**: Load the runbook, check `next_action.actor`. If `actor=will`, the existing `inputs_pending` IS the question — do not re-ask differently. If `actor=shadow`, do the work.
 3. **Per attempt**: Append to `history` with `ts`, `stage`, `action`, `result`. This is the audit trail that prevents Shadow from re-asking what the user already answered.
-4. **On credential acquisition**: Save to Bitwarden in the same turn (CLAUDE.md rule #31), set `credentials_in_bitwarden=true`, record `bitwarden_entry_name`.
+4. **On credential acquisition**: Save to Bitwarden in the same turn, set `credentials_in_bitwarden=true`, record `bitwarden_entry_name`.
 5. **On completion**: Set `status=complete`, write a one-line receipt to `#shadow-log`: `✅ account-setup · <service> · credentials in bitwarden as <entry_name>`.
 6. **On hard block**: Set `status=blocked`, list the blocker in `blockers`. Surface to the user ONLY if it qualifies under the standing-authority blocker allowlist (auth requiring the user's hands, money beyond $20/mo, legal/compliance, or irreversible high-blast-radius action).
 
@@ -77,8 +77,8 @@ Use this service-specific checklist before any attempt to create Telegram bots a
 ## Hard stops
 
 1. **No re-ask of an already-answered input** — if `inputs_received` has the field the user is being asked about, look there first.
-2. **Rate-limit gates** — respect `rate_limit_windows`. If `history` shows 3+ failures within the window, HALT and tell the user.
-3. **No autonomous account creation for services that bill** — accounts that immediately attach billing must surface to the user under standing-authority rule #2 (money beyond infra line).
+2. **Rate-limit gates** — respect `rate_limit_windows`. Do not repeat attempts within an active rate-limit window; retain the next action.
+3. **Billing authority** — apply the mandate’s spend and account-creation limits before incurring a charge. Billing capability alone does not require another approval.
 
 ## Why this exists
 
@@ -86,7 +86,7 @@ The Coinbase CDP setup on 2026-06-14 spanned ~6 turns asking for the same phone 
 
 ## Reference
 
-- Memory: `feedback_bitwarden_autosave.md` (CLAUDE.md rule #31)
+- Memory: `feedback_bitwarden_autosave.md`
 - Memory: `reference_capability_inventory.md` (visual-CAPTCHA blockers)
 - Skill: `harness/skills/verification_state_tracking.md` (per-code state — sub-component)
 - Contract: `platform-action-precheck` (pre-flight for browser actions)

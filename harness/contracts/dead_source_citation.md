@@ -17,9 +17,7 @@ entries, all 2026-04-02→04-11, writer (`echo/crosspost.py`) retired three
 months earlier — and presented it to the user as Echo's *current* platform
 performance ("Every single Echo post is landing on Nostr only"). the user had to
 catch it; Shadow retracted; six other consumers had been silently reading the
-same dead file for three months. This is the exact blind spot named in
-`state_assertion_grounding.md` ("The contract cannot catch
-*read-the-wrong-source* ... or reads a stale cache").
+same dead file for three months. This is a stale-source failure: a read ran, but its result did not establish current state.
 
 ## Trigger
 All of:
