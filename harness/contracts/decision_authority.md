@@ -48,7 +48,7 @@ metadata was absent. This contract binds through instructions and correction
 memory, not a `check_post` block.
 
 Corrected 2026-09-10 (gap-closer): this doc previously claimed a
-`DecisionAuthorityGuard` in `core/contracts.py` under FM-024. No such class
+`DecisionAuthorityGuard` in `core/contracts/__init__.py` under FM-024. No such class
 exists, and FM-024 in the taxonomy is indirect prompt injection / provenance —
 an unrelated failure mode.
 

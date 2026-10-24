@@ -46,7 +46,7 @@ Agents are *not* independent when:
 
 ## Enforcement
 
-Tier 2 code contract: `ParallelAgentConsensusGuard` in `core/contracts.py` (to be added — see Tier 2 queue).
+Tier 2 code contract: `ParallelAgentConsensusGuard` in `core/contracts/__init__.py` (to be added — see Tier 2 queue).
 Until code enforcement is wired: this is a harness-enforced behavioral rule Shadow must apply manually when consolidating multi-agent research.
 
 ## Interaction with existing contracts

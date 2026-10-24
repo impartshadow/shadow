@@ -164,7 +164,7 @@ Tool names in prose are not rewritten.
 
 **Contract:** `memory-write-guard`
 
-**Code guard:** `core/contracts.py:MemoryWriteGuard`
+**Code guard:** `core/contracts/code_ops.py:MemoryWriteGuard`
 
 **Recovery:** Check MEMORY.md for duplicates. Verify content accuracy. Confirm memory type criteria. Then write.
 
@@ -184,7 +184,7 @@ Tool names in prose are not rewritten.
 
 **Severity:** Block.
 
-**Sub-pattern (c) — continuation ambiguity:** Turn ends with "picking it up next" / "I'll start on X next" / "say the word and I'll cycle it" — language that reads as *Shadow is still working* — but the turn is terminal and nothing is running. the user waits, gets silence, and has to ask "are you still working?" (recurring symptom, 2026-06-15). Contract `continuation-ambiguity-guard` (`core/contracts.py:ContinuationAmbiguityGuard`) fires only when the implication is in the tail of the reply, no async-launch tool ran this turn, and no explicit handoff marker ("your call", "say go", "standing by") is present. Recovery: either do the next thing now, or make the handoff explicit. The honest in-flight case (a real background task running) is reported separately by a runtime footer in `discord_bot.py` that reads the live task registry — `🔄 Still running in background: …`.
+**Sub-pattern (c) — continuation ambiguity:** Turn ends with "picking it up next" / "I'll start on X next" / "say the word and I'll cycle it" — language that reads as *Shadow is still working* — but the turn is terminal and nothing is running. the user waits, gets silence, and has to ask "are you still working?" (recurring symptom, 2026-06-15). Contract `continuation-ambiguity-guard` (`core/contracts/conversation.py:ContinuationAmbiguityGuard`) fires only when the implication is in the tail of the reply, no async-launch tool ran this turn, and no explicit handoff marker ("your call", "say go", "standing by") is present. Recovery: either do the next thing now, or make the handoff explicit. The honest in-flight case (a real background task running) is reported separately by a runtime footer in `discord_bot.py` that reads the live task registry — `🔄 Still running in background: …`. Generalized 2026-10-24 (#finance, same principle as FM-052) from twelve near-literal phrase entries down to a continuation-verb + deferral-marker pattern family plus a short residual idiom list, so unnamed verb/timing combinations fire without a new line per phrasing — deliberately kept small rather than exhaustive, per the user's instruction not to over-specify and to let the model breathe.
 
 ### FM-004 — Wrong Tool Route / Capability Misroute
 
@@ -370,7 +370,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Pattern:** Shadow asserts that its own infrastructure is missing, needed, or should be built — without running Grep/Read/Glob/Bash to confirm the gap. Claims like "Shadow needs X", "there's no test for Y", "we should build Z" made from general agent-architecture intuition rather than ground truth.
 **Root cause:** Pattern-matching against mental models of what a generic agent *ought* to have, without checking what Shadow actually has. Shadow has substantial existing infra (nightly self-audit, Bilevel pattern, /improve, memory decay, regression tests, contract enforcement) that keeps getting re-discovered as if new.
 **Contract:** `fabricated-gap-guard`
-**Code guard:** `core/contracts.py:FabricatedGapGuard` — detects gap claims + Shadow-infra vocabulary + absence of investigation tools this turn.
+**Code guard:** `core/contracts/retired.py:FabricatedGapGuard` — detects gap claims + Shadow-infra vocabulary + absence of investigation tools this turn.
 **Recovery:** Grep/read the repo before proposing. If gap exists, cite evidence. If not, retract the proposal.
 **Frequency:** 4 of 5 proposed gaps in a single thread on 2026-04-18 turned out to be fabricated.
 
@@ -385,7 +385,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Pattern:** Shadow transmits the user's personal identifiers (emails, handles, phone numbers, real name) OUT of the private the user<->Shadow conversation to third parties or public surfaces — cold emails to strangers, tweets, Mastodon posts, webhook / platform-registration POSTs (e.g. Moltbook), or file writes to publish-adjacent paths (`state/outbound_drafts/`, `shadow-public/`). Discord is a private 2-way channel and is NOT a dox surface.
 **Root cause:** Identifiers sit in memory/user_will.md (loaded into every context) and in operational code (outbound_scout prompts hardcoded the principal's name + employer). Without an outbound-side gate, any content generator that's seen the context can echo those identifiers into external content.
 **Contract:** `dox-guard`
-**Code guard:** `core/contracts.py:DoxGuard` — pre-tool-call scan on outbound tool names (gmail/tweet/mastodon/webhook) and on write-tool calls whose target path is publish-adjacent. Severity: `block`. No auto-recover — blocked content must be regenerated cleanly.
+**Code guard:** `core/contracts/outbound.py:DoxGuard` — pre-tool-call scan on outbound tool names (gmail/tweet/mastodon/webhook) and on write-tool calls whose target path is publish-adjacent. Severity: `block`. No auto-recover — blocked content must be regenerated cleanly.
 **Scheduler path:** Scripts invoked directly by the scheduler (outbound_scout, echo_publish) bypass the contract pipeline. Those paths call `DoxGuard.scrub()` at the content boundary as a last-resort safety net.
 **Recovery:** Rewrite outbound content without the identifier — role-based references only, principal stays unnamed.
 **Origin:** 2026-04-18 live incident — Shadow's outbound_scout was about to cold-email strangers from [public-contact-email] with "I'm an AI agent built by [full name] in [city]" baked into the Haiku prompt. the user: "You were going to send my info out of our two-way conversation into the world." First-pass shipped a response-text guard; the user corrected the framing — response_text is inbounds-equivalent, check_pre on outbound tools is the whole point.
@@ -397,7 +397,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 | **Contract** | `capability-scope-assertion-guard` |
 | **Pattern** | Shadow asserts whether a tenant/business capability (Square, Stripe, Gmail, Calendar, etc.) is/isn't wired, exists, or is live, having checked only one file |
 | **Root cause** | Capabilities can have parallel implementations — a standalone cron script and a separate adapter-registry entry solving different halves of the same problem. A single-file Read only sees one half. |
-| **Detection** | `core/contracts.py:CapabilityScopeAssertionGuard` (warn, post-check) — fires on a capability-wiring assertion phrase unless the turn's tool calls show `scripts/capability_audit.py` or a scan spanning ≥2 of `core/`, `scripts/`, `echo/`, `state/` |
+| **Detection** | `core/contracts/conversation.py:CapabilityScopeAssertionGuard` (warn, post-check) — fires on a capability-wiring assertion phrase unless the turn's tool calls show `scripts/capability_audit.py` or a scan spanning ≥2 of `core/`, `scripts/`, `echo/`, `state/` |
 | **Recovery** | Run `python3 scripts/capability_audit.py <keyword>` before answering "is X wired" questions |
 | **Origin** | 2026-07-15 #tenant-ops — "no Square connector exists" (from reading only `core/tenant_tools.py`) contradicted the live `scripts/paul_square_order_sync.py` + `core/square_client.py`, shipped 2026-07-03. the user: "This should be a you problem" — structural fix over a reminder. |
 
@@ -450,7 +450,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 - `PersistentCorrectionGuard` (`persistent-correction`, warn/block) — Haiku/Gemini scores response against each surviving stop in `state/behavioral_stops.json`. Block threshold 0.85, warn 0.72. Source-redirect directives ("switch to X", "find Y instead") are filtered at load time (gap-closer 2026-06-12). Per-original-message dedup at load time (gap-closer prior session — 13 variants of one correction).
 - `WeBuiltAttribution` (`we-built-attribution`, block) — Specialized check for the #1 recurring stop ("Shadow built" not "we built").
 **Code guards:**
-- `core/contracts.py:PersistentCorrectionGuard` — load-time stop filter + dedup + Haiku/Gemini scoring; per-stop confidence threshold configurable via `state/persistent_correction_config.json`.
+- `core/contracts/retired.py:PersistentCorrectionGuard` — load-time stop filter + dedup + Haiku/Gemini scoring; per-stop confidence threshold configurable via `state/persistent_correction_config.json`.
 - `scripts/behavioral_stops_miner.py` — nightly miner; dedupes at write time after gap-closer found Haiku producing 13 directive variants per origin correction.
 - `scripts/persistent_correction_falsification.py` — validates that recent blocks were true positives; reverts the threshold (`state/persistent_correction_config.json`) if false-positive rate is high.
 **Recovery:** (1) Read the stop directive. (2) Identify the upstream source of the regenerating pattern — usually a prompt template under `prompts/`, `skills/`, or a heartbeat/digest renderer. (3) Patch the source so the pattern can't regenerate, then add the stop as a quick-reference rule in CLAUDE.md if not already present. (4) For mis-mined stops, file an issue against the miner; the load-time filter + dedup catches most of these but new patterns need explicit filters.
@@ -493,7 +493,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Contract:** `ToolResultInjectionGuard` (warn, post-check) + `sanitize_tool_output()` (pre-check sanitizer)
 
 **Code guard:** 
-- `core/contracts.py:ToolResultInjectionGuard` — detects OWASP LLM02 patterns in tool results (role overrides, instruction prefixes, system-prompt injections)
+- `core/contracts/conversation.py:ToolResultInjectionGuard` — detects OWASP LLM02 patterns in tool results (role overrides, instruction prefixes, system-prompt injections)
 - `core/claude_client.py:sanitize_tool_output()` — strips injection signatures before passing results to reasoning context
 
 **Recovery:** (1) Post-check identifies suspicious patterns and warns. (2) Pre-check sanitization strips known patterns before downstream use. (3) If sanitization fails, escalate to the user.
@@ -518,7 +518,7 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Pattern:** Shadow ships external content (cold email, Substack brief, Moltbook / X post) that is generic, templated, filler, or spammy — output that clears every structural gate but would not make a sharp reader react with "damn, this is good." Example: four cold emails sharing one skeleton ("[callback to your piece] → I write Shadow → here's a brief → subscribe link").
 **Root cause:** Optimizing for volume and structural correctness instead of for the reader's reaction. Templated reuse is the spam tell; the quality bar is subjective and was previously only a prose preference, not an enforced gate.
 **Contract:** `ExternalQualityGate` (block, pre-check, Haiku-judged, fail-open)
-**Code guard:** `core/contracts.py:ExternalQualityGate` — pre-check on the same outbound surfaces DoxGuard covers (publish-path writes + post/email tools). Haiku judges each outbound blob against the "best work / 'damn, this is good'" bar with a lenient rubric (blocks only clear failures, passes on doubt) and fails OPEN on any error so an infra hiccup never hard-blocks a send.
+**Code guard:** `core/contracts/outbound.py:ExternalQualityGate` — pre-check on the same outbound surfaces DoxGuard covers (publish-path writes + post/email tools). Haiku judges each outbound blob against the "best work / 'damn, this is good'" bar with a lenient rubric (blocks only clear failures, passes on doubt) and fails OPEN on any error so an infra hiccup never hard-blocks a send.
 **Recovery:** Rewrite to a specific, original, substantive angle a sharp reader reacts to with "damn, this is good." Cut generic / templated / filler phrasing. If you would not be proud to put your name on it, do not ship it.
 **Escalation:** None — self-gated. Hold or revise rather than surface.
 **Origin:** 2026-06-01 — the user reviewed the funnel cold-email batch: first "stop cold-including the stripe link, send to substack" + "reads as a plea," then generalized it: "raise your bar for anything external. Would you say it's your best work and you're proud of it? Moltbook, substack, twitter, emails etc." Explicitly framed as "the same as the doxguard — enforced everywhere external."
@@ -591,7 +591,7 @@ Retired October 16, 2026: web-tool rewriting contradicted mandate WEB_ACCESS.
 
 **Why it's a deferral:** the receipt claims the artifact is finished, but the file the user opens contains newly-introduced stubs Shadow wrote this turn. Same family as premature `done` (rule 30) and fabricated commit hashes (rule 29) — the completion claim is not backed by the artifact.
 
-**Enforcement:** `stubbed-artifact-guard` (post-check, block). Inspects the raw `content`/`new_string`/`new_source` argument from each write-class tool call, matched against a strict marker set with path allowlist (`core/contracts.py`, `harness/**`, `tests/**`, `memory/**`, failure-museum/autopsy docs) and content-context suppression (regex-pattern definitions, `assert not TODO` assertions, prose `.md` outside code fences). Disabled entirely when the response uses `⏳` / `blocker:` / `wip` / `stub for` / `sentinel` framing — that framing declares the deferral honestly.
+**Enforcement:** `stubbed-artifact-guard` (post-check, block). Inspects the raw `content`/`new_string`/`new_source` argument from each write-class tool call, matched against a strict marker set with path allowlist (`core/contracts/__init__.py`, `harness/**`, `tests/**`, `memory/**`, failure-museum/autopsy docs) and content-context suppression (regex-pattern definitions, `assert not TODO` assertions, prose `.md` outside code fences). Disabled entirely when the response uses `⏳` / `blocker:` / `wip` / `stub for` / `sentinel` framing — that framing declares the deferral honestly.
 
 **Recovery:** either (a) complete the stub in-turn and re-issue the receipt, or (b) reframe as `⏳ <op> · step complete · <what landed> · blocker: <concrete reason>`.
 
@@ -656,11 +656,18 @@ Retired October 16, 2026: web-tool rewriting contradicted mandate WEB_ACCESS.
 
 **Recent examples:** `clean this up` against a 2-item Discord status list producing a response covering only item 1; `handle these` against a 4-bullet Telegram reply covering 2 bullets.
 
+### FM-011.c — Principle saved, not applied
+
+**Pattern:** the user states a standing principle while a just-shipped or in-view piece of work violates it; Shadow writes the principle to memory ("saved as a standing principle", "noted") and defers the application ("isn't built yet", "I'll note that as the next iteration"). the user then has to route the same instruction again ("did you change it yet?", "Fix it"). Observed 2026-10-24 #finance: "Yeah. Always try to fix upstream" → three replies of memory-only acknowledgement → "Fix it".
+**Root cause:** A principle is treated as a preference to store rather than as an instruction scoped to the work in view. The memory write produces a receipt-shaped sentence, which reads as completion.
+**Code guard:** `core/contracts/conversation.py:OwnershipAskExecutionGate` branch C (`principle_saved_not_applied`) — memory-recording tools do not count as action; a plain state report without saved-rule language passes. Upstream: `core/identity.py:conversation_rules()` instructs applying a stated principle to the work in view in the same turn.
+**Recovery:** Apply the principle to the thing just shipped, report the edit and result, record the rule afterwards if at all.
+
 ### FM-011.b — Unresolved receipt citations
 
 **Parent:** FM-011 (historical action-deferral classification).
 
-**Enforced by:** `action-deferral-pre-emit-guard` (`core/contracts.py`). The
+**Enforced by:** `action-deferral-pre-emit-guard` (`core/contracts/__init__.py`). The
 existing identifier preserves historical ledger continuity.
 
 **Trigger:** A task response with no state-changing tool call explicitly cites
@@ -678,7 +685,7 @@ checks remain in their canonical owners.
 
 Assistant answers a subset of the discrete asks in a multi-slot user message, silently dropping one or more. Distinct from FM-013 (scope overrun) because the failure is *under*-coverage, not over. Distinct from FM-011 (deferral) because the drop is silent, not acknowledged.
 
-**Enforced by:** `MultiSlotCoverageGate` (`core/contracts.py`). Deterministic suspicion filter triggers a Haiku slot enumeration (cached in `state/multi_slot_cache.jsonl` and on `ContractContext.multi_slot_enum`) during `check_pre`; `check_post` invokes a second Haiku judgment across the finalized `response_text` + `tool_call_results` and blocks with an anchored regeneration message on any `not_covered` slot. `deferred_with_reason` passes so honest blockers are not punished.
+**Enforced by:** `MultiSlotCoverageGate` (`core/contracts/__init__.py`). Deterministic suspicion filter triggers a Haiku slot enumeration (cached in `state/multi_slot_cache.jsonl` and on `ContractContext.multi_slot_enum`) during `check_pre`; `check_post` invokes a second Haiku judgment across the finalized `response_text` + `tool_call_results` and blocks with an anchored regeneration message on any `not_covered` slot. `deferred_with_reason` passes so honest blockers are not punished.
 
 **Recovery:** regeneration prompt quotes the exact missed span and requires the next response to address it or explicitly defer with a named reason.
 
@@ -697,7 +704,7 @@ Assistant answers a subset of the discrete asks in a multi-slot user message, si
 
 **Root cause**: Shadow treats memory of what state contained last turn (or last hour) as sufficient grounding for a definitive-tense assertion. FM-025 sits in the same family as FM-003 (verification citation), FM-027 (rollup completion), and FM-024 (definitive Yes/No answers) — the shared failure is generation-without-verification of Shadow's own artifacts.
 
-**Enforcement**: `artifact-existence-grounding-gate` (`core/contracts.py`). Post-check on assistant responses. Sentence-scoped regex over two predicate families (NEGATION + AFFIRMATION) keyed to a fixed Shadow-artifact noun list. Fires when zero grounding tool calls (`Read`, `Grep`, `Glob`, `browse_url`, `web_search`, `list_async_tasks`, `TaskOutput`, `mcp__shadow__*`, or Bash whose command hits a canonical state-path hint and is not a pure mutation) ran in the same turn. Suppressed by hedge tokens (`I think`, `unverified`, `pending verification`), explicit source citation (`per your HH:MM ...`, `per state/... shows`), question form, or third-party subject prefix.
+**Enforcement**: `artifact-existence-grounding-gate` (`core/contracts/__init__.py`). Post-check on assistant responses. Sentence-scoped regex over two predicate families (NEGATION + AFFIRMATION) keyed to a fixed Shadow-artifact noun list. Fires when zero grounding tool calls (`Read`, `Grep`, `Glob`, `browse_url`, `web_search`, `list_async_tasks`, `TaskOutput`, `mcp__shadow__*`, or Bash whose command hits a canonical state-path hint and is not a pure mutation) ran in the same turn. Suppressed by hedge tokens (`I think`, `unverified`, `pending verification`), explicit source citation (`per your HH:MM ...`, `per state/... shows`), question form, or third-party subject prefix.
 
 **Severity**: block.
 
@@ -713,11 +720,11 @@ Assistant answers a subset of the discrete asks in a multi-slot user message, si
 
 **Enforcement**: `memory-instruction-routing-gate` (pre-check on Write/Edit against `memory/**/*.md`) blocks writes whose delta contains imperative or declarative-rule-shaped sentences lacking grounding markers within 20 lines, or containing enforcement vocabulary + system nouns (which route to harness/ regardless of grounding). `propguard-provenance-detector` (post-check, warn) retained as backstop for edits that slip through.
 
-**Recovery**: Add grounding in the same file (date, quoted the user, backlog ref, **Why:** structure) or route to `harness/contracts/<name>.md` + `core/contracts.py` (enforced rules) or `CLAUDE.md` Quick Reference (high-frequency the user-facing).
+**Recovery**: Add grounding in the same file (date, quoted the user, backlog ref, **Why:** structure) or route to `harness/contracts/<name>.md` + `core/contracts/__init__.py` (enforced rules) or `CLAUDE.md` Quick Reference (high-frequency the user-facing).
 
 ### FM-023 · gmail-sender-identity-guard
 
-**Failure**: Outbound Gmail send is constructed with the operator's personal address in the sender/from slot. That address is the user's personal inbox and is never a valid sender for any Shadow send; business sends must originate from the business account. The literal token lives once, in `core/contracts.py:GmailSenderIdentityGuard._PERSONAL_TOKEN`; this entry references it by role so the identifier does not spread.
+**Failure**: Outbound Gmail send is constructed with the operator's personal address in the sender/from slot. That address is the user's personal inbox and is never a valid sender for any Shadow send; business sends must originate from the business account. The literal token lives once, in `core/contracts/outbound.py:GmailSenderIdentityGuard._PERSONAL_TOKEN`; this entry references it by role so the identifier does not spread.
 
 **Contract**: `GmailSenderIdentityGuard` (block, both `check_pre` runtime and static AST on `git_commit`/`git_push`).
 
@@ -861,7 +868,7 @@ A character-proximity window was tried first and failed — it still reached int
 | **Applicable contracts** | `state-assertion-grounding`, `stale-state-assertion-guard` |
 | **Pattern** | A final response asserts, infers, temporally extends, or concurs with a mutable current-state proposition without successful, relevant, same-turn, non-superseded evidence for every referent, predicate, polarity, quantifier, and temporal qualifier. |
 | **Root cause** | Mutable state is inferred from conversation memory, stale observations, unrelated reads, ambiguous referents, or overextended reasoning instead of claim-specific authoritative evidence. |
-| **Detection** | `core/contracts.py:MutableStateGroundingGuard` is an emission-blocking `check_pre` for every `respond` action. It consumes structured claims produced by the versioned predicate ontology and joins them to same-turn evidence, mutation ordering, supersession metadata, quantifier coverage, temporal support, and registered derivations. Missing extraction metadata fails closed. |
+| **Detection** | `core/contracts/claims.py:MutableStateGroundingGuard` is an emission-blocking `check_pre` for every `respond` action. It consumes structured claims produced by the versioned predicate ontology and joins them to same-turn evidence, mutation ordering, supersession metadata, quantifier coverage, temporal support, and registered derivations. Missing extraction metadata fails closed. |
 | **Violation subtypes** | `FM-022.UNGROUNDED_CURRENT_STATE`, `FM-022.STALE_EVIDENCE`, `FM-022.UNRELATED_EVIDENCE`, `FM-022.UNRESOLVED_REFERENT`, `FM-022.UNSUPPORTED_CONCURRENCE`, `FM-022.UNSUPPORTED_TEMPORAL_CLAIM`, `FM-022.OVEREXTENDED_INFERENCE` |
 | **Severity** | `block` |
 | **Recovery** | Withhold the complete candidate. Obtain live authoritative evidence and regenerate, or replace the claim with an explicitly attributed historical report or clearly bounded statement that current state has not been verified. Neutralize concurrence until its exact proposition is grounded. Temporal claims additionally require timestamp or continuity evidence. Run the guard again before dispatch. |
@@ -878,7 +885,7 @@ A character-proximity window was tried first and failed — it still reached int
 **Pattern:** Shadow performs a consequential action based on a proposal before presenting critique, validation, refinement, pressure-testing, or collaborative judgment requested by the user, or acts before required user agreement.
 **Root cause:** Execution authorization is treated as overriding a review-before-action ordering constraint, or hidden reasoning is mistaken for a user-visible assessment.
 **Contract:** `collaborative-review-gate`
-**Code guard:** `core/contracts.py:CollaborativeReviewGate` — binds the active review obligation, structured user-visible review record, and any subsequent user agreement to a stable proposal/action identifier before allowing mutation.
+**Code guard:** `core/contracts/conversation.py:CollaborativeReviewGate` — binds the active review obligation, structured user-visible review record, and any subsequent user agreement to a stable proposal/action identifier before allowing mutation.
 **Recovery:** Present an assessment with an accept/revise/reject decision and material changes. If collaboration, confirmation, or approval was required, wait for a later matching user agreement before executing.
 
 > **Normative definition — FM-003 — Acting without requested assessment or agreement:** When a user requests critique, validation, refinement, pressure-testing, or collaborative judgment concerning a proposal, the system must not perform a consequential action based on that proposal until it has presented the requested assessment. If the user also makes execution conditional on collaboration, confirmation, or approval, the system must not act until that agreement is obtained.
@@ -893,7 +900,7 @@ A character-proximity window was tried first and failed — it still reached int
 
 **Contract:** `fleet-state-claim-grounding-gate`
 
-**Code guard:** `core/contracts.py:FleetStateClaimGroundingGate` — classifies assistant-authored fleet clauses, requires claim-type-appropriate same-turn evidence, verifies that the evidence entails counts and states at the asserted certainty, and blocks unsupported output before emission.
+**Code guard:** `core/contracts/claims.py:FleetStateClaimGroundingGate` — classifies assistant-authored fleet clauses, requires claim-type-appropriate same-turn evidence, verifies that the evidence entails counts and states at the asserted certainty, and blocks unsupported output before emission.
 
 **Recovery:** Suppress the candidate response. Query the authoritative fleet, scheduler, registry, associated processes, module registry, or current configuration as appropriate, then regenerate and re-check. If no authoritative probe is available, state that the current state is unverified without adopting a positive or negative conclusion.
 
@@ -909,7 +916,7 @@ A character-proximity window was tried first and failed — it still reached int
 
 **Contract:** `external-attempt-receipt-guard`
 
-**Code guard:** `core/contracts.py:ExternalAttemptReceiptGuard` — blocks first-person attempt claims naming an external object (link/url/proxy/browser/page/captcha) when no live-fetch tool (browser_*, browse_url, run_shell, web_search, bash/curl) ran and no verification output was captured. Negated non-attempts, past-time recall, and reported/retracted prior claims pass.
+**Code guard:** `core/contracts/outbound.py:ExternalAttemptReceiptGuard` — blocks first-person attempt claims naming an external object (link/url/proxy/browser/page/captcha) when no live-fetch tool (browser_*, browse_url, run_shell, web_search, bash/curl) ran and no verification output was captured. Negated non-attempts, past-time recall, and reported/retracted prior claims pass.
 
 **Recovery:** Run the actual fetch this turn and cite its output, or rewrite the claim as a plan / mark it unattempted.
 
@@ -923,7 +930,7 @@ A character-proximity window was tried first and failed — it still reached int
 
 **Contract:** `typed-claim-entailment-gate`
 
-**Code guard:** `core/contracts.py:TypedClaimEntailmentGate` — a blocking `check_pre` gate over the exact candidate response, claim manifest, referent bindings, immutable evidence records, and current timestamp. It validates manifest coverage, canonical referents, evidence admissibility and freshness, lifecycle completion, completeness, and deterministic derivations. Approval is bound to a SHA-256 digest of the response and manifest.
+**Code guard:** `core/contracts/claims.py:TypedClaimEntailmentGate` — a blocking `check_pre` gate over the exact candidate response, claim manifest, referent bindings, immutable evidence records, and current timestamp. It validates manifest coverage, canonical referents, evidence admissibility and freshness, lifecycle completion, completeness, and deterministic derivations. Approval is bound to a SHA-256 digest of the response and manifest.
 
 **Recovery:** Clarify ambiguous referents; retrieve or refresh missing or stale state; wait for pending results; report only evidenced failure or emptiness; preserve uncertainty for non-entailed or conflicting claims; and independently re-run the gate on regenerated responses.
 
@@ -997,7 +1004,7 @@ like it's pretty lame"; Shadow agreed that "RSI advanced" had been given more
 weight than it earned, and then reused the same shape twice more.
 
 `scripts/self_rewrite_loop` already refuses to open a second ungraded
-challenger, but only for rewrites it authors in `core/contracts.py`. The
+challenger, but only for rewrites it authors in `core/contracts/__init__.py`. The
 hand-edited path had no equivalent.
 
 Enforcement:
@@ -1092,7 +1099,7 @@ one: the origin draft.
 
 **Root cause:** A timeout is a non-result, but it arrives in the same slot as a result. Without a structural gate, the turn treats "no answer returned" as "nothing to report" and the response silently reverts to prior belief.
 
-**Contract:** `TimeoutDisclosureGate` (block, post-check on `respond`), `core/contracts.py`.
+**Contract:** `TimeoutDisclosureGate` (block, post-check on `respond`), `core/contracts/__init__.py`.
 
 **Code guard:** Timeouts are read only from structured fields on `ContractContext.tool_call_results` — `result_status == "timeout"`, `exit_code == 124`, or `error_type` in `{TimeoutExpired, TimeoutError, ReadTimeout, CommandTimeout}`. Result prose is never keyword-scanned, so a command whose output mentions "timeout" is not flagged. A timed-out call is exempt when a later call with the same tool and identical params succeeded (the retry, not the abandonment, is what the response describes).
 
@@ -1108,7 +1115,7 @@ one: the origin draft.
 
 **Root cause:** A timeout is the absence of a result, not a negative result. The probe may have been slow, the budget too short, or the query too broad; none of that entails that the target is down, missing, or empty. The turn treats "no answer returned" as "the answer is no."
 
-**Contract:** `TimeoutNegativeInferenceGate` (block, post-check on `respond`), `core/contracts.py`.
+**Contract:** `TimeoutNegativeInferenceGate` (block, post-check on `respond`), `core/contracts/__init__.py`.
 
 **Code guard:** Two-stage and deliberately narrow. The gate only arms on a structured, unresolved timeout in `ContractContext.tool_call_results` — `result_status == "timeout"`, `exit_code == 124`, or `error_type` in `{TimeoutExpired, TimeoutError, ReadTimeout, CommandTimeout}`. Result prose is never keyword-scanned. Only then is the response sentence-split and matched against terminal-negative predicates (down / offline / unreachable / does not exist / there is no / no such / nothing found / confirmed missing). Sentences carrying a hedge or explicit non-confirmation (`may`, `might`, `appears to`, `unverified`, `can't confirm`, `unknown`) are exempt — that is the correct shape. Two carve-outs prevent guessing: an identical successful retry supersedes the timeout, and any *other* successful call on the same tool stands the gate down, since a narrower retry that legitimately came back empty can ground the negative claim.
 
@@ -1225,3 +1232,13 @@ one: the origin draft.
 **Relationship to neighbours:** `stale-state-assertion-guard` (FM-022) passes once any live-check tool ran — here the tool ran but could not cover the claimed time range. `absence-claim-gate` (FM-029) covers user-supplied artifacts and treats "inbox" as enumeration.
 
 **Recovery:** Report the check in present tense with its scope and match rule ("zero matches now for sender/subject GitHub"); say the earlier state and who cleared it are unknown unless a log/receipt shows it; if the user expected matches, widen the match rule (look-alike senders, Shadow's own outreach notifications) before concluding.
+
+## FM-052: narration-filler-tic
+
+**Pattern:** The reply wraps a direct answer in empty self-referential framing instead of stating the content outright — "let me give it to you straight", "honest take/answer", "here's the thing", "you're asking the right question", "fair point/criticism —", "a real gap, not an excuse", "to be honest/candid/blunt", "real talk", "no sugar-coating". These add no information; they announce that information is coming. Observed 2026-10-24 #finance (crypto-price thread), the third recurrence of this category after two memory-only corrections failed to stick (`feedback_no_honest_take.md`, 2026-05; `feedback_no_surprise_framing.md`, 2026-08): "You're doing the weird, like, let me give it to you straight. You're asking the right question, kind of thing, that I hate."
+
+**Enforcement:** `NarrationFillerGate` (`narration-filler-gate`, `core/contracts/conversation.py`, `check_post`, severity `block`), scanned after stripping quoted spans and contract/guard meta-discussion lines (so a reply *about* the pattern, like the one that introduced this gate, does not trip it). Upgraded 2026-10-24 (same thread, same day) from a fixed phrase list to structural patterns (framing verb + framing-adjective family, e.g. "let me/I'll be honest/direct/candid/blunt (with you)", "to be X,", "my/the X take/answer —") so unnamed phrasings in the same shape fire without a new literal entry per variant. Still not a semantic classifier — a genuinely novel shape (no shared verb/adjective structure with the families above) can still slip through and should be folded into a pattern family, not appended as an isolated literal.
+
+**Relationship to neighbours:** Pure voice/framing — no claim-grounding or evidence contract covers phrasing choices; this is the first deterministic gate in that category. Not to be confused with `FM-011` continuation-ambiguity patterns, which police promised future work rather than present-turn wording.
+
+**Recovery:** Delete the phrase and any sentence built only to introduce it; lead with the fact, number, or recommendation itself.

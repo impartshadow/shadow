@@ -2,7 +2,7 @@
 
 **Type:** Code-enforced (warn-only)
 **Failure mode:** FM-026 (live-state assertion without live fetch)
-**Location:** `core/contracts.py` → `class LiveStateClaimGuard`
+**Location:** `core/contracts/claims.py` → `class LiveStateClaimGuard`
 
 ## Trigger
 A response asserts current/live external state — prices, market data, news, weather, scores, election counts, third-party model releases — without running a live data tool (`mcp__shadow__web_search`, `mcp__shadow__browse_url`) in the same turn. Model priors decay; a "current price of X" claim from training memory is not live data.

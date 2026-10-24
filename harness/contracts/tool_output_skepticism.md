@@ -16,7 +16,7 @@ Before accepting multi-source tool output as ground truth, ALL of the following 
 
 ## Enforcement
 **Harness-enforced** via research.md AEI skepticism gates (Execute stage).
-Code enforcement in `core/contracts.py` is Tier 2 — requires tracking tool output state
+Code enforcement in `core/contracts/__init__.py` is Tier 2 — requires tracking tool output state
 across a multi-call session, not yet implemented.
 
 ## Origin

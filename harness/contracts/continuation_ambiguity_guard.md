@@ -72,5 +72,5 @@ than blanket-suppressing.
   list]", "run Y", "go through [these]", "farm out to subagents", or any
   open-ended question that requires >5 min of investigation. No dedicated
   async-start-receipt contract exists in code (AsyncStartReceipt retired
-  2026-07-05 as a broken detector — see `core/contracts.py` audit
+  2026-07-05 as a broken detector — see `core/contracts/conversation.py` audit
   comment); Rule 39 is upstream enforcement only.

@@ -19,7 +19,7 @@ artifact in existing sources (thread history, prior attachments,
 back empty, and say so explicitly: "I checked the thread and didn't find it,
 can you resend?"
 
-**Enforcement:** `core/contracts.py:AttributeCorrectionVerificationGuard.check_post()`.
+**Enforcement:** `core/contracts/conversation.py:AttributeCorrectionVerificationGuard.check_post()`.
 Correction cues: "actually X, not Y" / "we learned" / "turns out" / "the X are
 Y, not Z" *combined with* a redo verb ("redo", "rerun", "update", "again",
 "fix"). Completion phrasing: "Updated today's…" / "Here's the updated…" /

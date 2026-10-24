@@ -9,7 +9,7 @@
 - Existing memory file (Write/Edit overwrite or update): allowed.
 - `MEMORY.md` index: Edit allowed (this is the documented append-line index-update workflow in CLAUDE.md auto-memory); Write blocked (would lose existing entries).
 
-**Enforcement:** `core/contracts.py:MemoryWriteGuard.check_pre()`.
+**Enforcement:** `core/contracts/code_ops.py:MemoryWriteGuard.check_pre()`.
 
 **Recovery:**
 - Wrong path: write to the correct file under `memory/`.

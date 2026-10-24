@@ -14,7 +14,7 @@ Sub-modes:
   `warn` (escalates to pattern-analysis).
 
 ## Type
-Code-enforced (`ScopeCoverageGuard` in `core/contracts.py`).
+Code-enforced (`ScopeCoverageGuard` in `core/contracts/conversation.py`).
 
 ## Trigger
 `_should_fire` returns True when any of:

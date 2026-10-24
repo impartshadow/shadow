@@ -16,9 +16,9 @@ Standard approaches to evaluating agent behavior penalize non-canonical paths ev
 
 ## Enforcement
 
-**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+**Not code-enforced.** No gate for this contract exists in `core/contracts/__init__.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
 
-`OutcomeEquivalenceGuard` in `core/contracts.py` — post-check observer that evaluates outcome achievement (heuristic + outcome signal emission).
+`OutcomeEquivalenceGuard` in `core/contracts/__init__.py` — post-check observer that evaluates outcome achievement (heuristic + outcome signal emission).
 
 Emits to `state/outcome_equivalence_scores.jsonl` for session audit analysis:
 - `outcome_achieved`: boolean, whether response shows completion/results

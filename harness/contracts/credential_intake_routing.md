@@ -1,7 +1,7 @@
 # Contract: credential-intake-routing
 
 ## Type
-Post-response gate — deterministic enforcement via `core/contracts.py:CredentialIntakeRoutingGuard`
+Post-response gate — deterministic enforcement via `core/contracts/code_ops.py:CredentialIntakeRoutingGuard`
 
 ## Failure mode
 FM-013 (clarification quality — routing delegated back to the user)

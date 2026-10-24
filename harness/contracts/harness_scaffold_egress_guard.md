@@ -17,7 +17,7 @@ Harness-internal scaffolding tokens appearing in external responses:
 the user sees results, not harness execution scaffolding.
 
 ## Enforcement
-Code-enforced in `core/contracts.py::HarnessScaffoldEgressGuard`. Two-layer detection:
+Code-enforced in `core/contracts/outbound.py::HarnessScaffoldEgressGuard`. Two-layer detection:
 1. Bracketed harness tags anywhere on a line
 2. Bare scaffold phrases at line start
 

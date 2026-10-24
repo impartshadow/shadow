@@ -2,7 +2,7 @@
 
 **Type:** Code-enforced post-check (warn severity)
 **Failure mode:** FM-027 (trigger-repro sub-case of fabricated verification claim)
-**Location:** `core/contracts.py` → `class ClassifierFixReproGuard`
+**Location:** `core/contracts/retired.py` → `class ClassifierFixReproGuard`
 
 ## Trigger
 

@@ -2,7 +2,7 @@
 
 **Type:** Standing principle (validated by empirical research)  
 **Research source:** "Is Grep All You Need? How Agent Harnesses Reshape Agentic Search" (2605.15184)  
-**Implemented by:** Memory retrieval layer (`core/memory_search.py`), contract enforcement (`core/contracts.py`)
+**Implemented by:** Memory retrieval layer (`core/memory_search.py`), contract enforcement (`core/contracts/__init__.py`)
 
 ---
 

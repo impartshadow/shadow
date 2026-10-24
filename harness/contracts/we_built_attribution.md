@@ -24,7 +24,7 @@ it conversationally and pre-block instead of post-hoc Haiku judgement.
 These exemptions exist because the user may quote Shadow's prior bad attributions
 back at it, and Shadow may quote external sources.
 
-**Enforcement:** `core/contracts.py:WeBuiltAttributionGuard.check_post()` —
+**Enforcement:** `core/contracts/outbound.py:WeBuiltAttributionGuard.check_post()` —
 regex match on `_WE_BUILT` followed by quote-context check.
 
 **Recovery:** Rewrite the span with "I built" or "Shadow built". Do not soften

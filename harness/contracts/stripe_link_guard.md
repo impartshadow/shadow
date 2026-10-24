@@ -2,7 +2,7 @@
 
 ## Type
 Post-response gate — deterministic enforcement via
-`core/contracts.py:StripeLinkGuard`. Severity: `block`.
+`core/contracts/outbound.py:StripeLinkGuard`. Severity: `block`.
 
 ## Failure mode
 FM-033 — recurrence of an explicitly corrected behavior. the user has corrected

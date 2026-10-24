@@ -1,5 +1,9 @@
 # Contract: ci-loop-closure
 
+**RETIRED (2026-10-22).** Do not follow this. Running the full suite after every
+push takes 25+ min and blocks Discord turns. Use `scripts/test_changed.py`
+(see `AGENTS.md`). `core/ci_loop.py` has no callers; slated for deletion.
+
 ## Type
 Post-push gate — **not code-enforced** (prompt-level self-check)
 
@@ -12,7 +16,7 @@ from `core/ci_loop.py`. The CI result must have `status == "green"` before Done 
 
 ## Enforcement
 **Not code-enforced.** No `CILoopClosureContract` class exists. Intended design was:
-**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
+**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts/__init__.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
 
 - Missing `ci_result`: warn-severity (contract not yet wired into push workflow)
 - `status == "escalate"`: block-severity (do not declare Done)

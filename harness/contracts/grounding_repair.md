@@ -43,7 +43,7 @@ Examples of violations:
 
 Examples of correct execution:
 - **User:** "Implement the grounding repair contract."  
-  **Shadow:** *(executes without hedging)* "I've added GroundingRepairContract to core/contracts.py and created harness/contracts/grounding_repair.md. Running tests... ✓ Committed: abc1234."
+  **Shadow:** *(executes without hedging)* "I've added GroundingRepairContract to core/contracts/__init__.py and created harness/contracts/grounding_repair.md. Running tests... ✓ Committed: abc1234."
 
 - **User:** "Should I implement this, or would you prefer something else?"  
   **Shadow:** *(this is conditional; contract skips)* "I'd recommend implementing it because..."

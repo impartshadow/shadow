@@ -11,15 +11,15 @@ Response MUST contain a code block with verification command output matching
 the fix type. Mental verification is not verification.
 
 ## Enforcement
-**Not code-enforced.** No `VerifyBeforePush` class exists in `core/contracts.py`.
+**Not code-enforced.** No `VerifyBeforePush` class exists in `core/contracts/__init__.py`.
 It exists only in `shadow-kit/shadow_kit/contracts.py` (the extracted product).
-A no-op `class VerifyBeforePush: pass` stub was committed to `core/contracts.py`
+A no-op `class VerifyBeforePush: pass` stub was committed to `core/contracts/__init__.py`
 to satisfy `tests/test_contract_guard.py`, and was removed 2026-09-18.
 
 Adjacent registered gates cover parts of this rule — `claim-verification`,
 `execution-evidence-guard`, `commit-hash-verification` — but no gate implements
 the pre-push verification-output precondition stated below.
-**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
+**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts/__init__.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
 
 
 ## Verification commands by fix type
@@ -33,7 +33,7 @@ the pre-push verification-output precondition stated below.
 | Briefing / task filter logic | `python3 -c "from scripts.briefing import _fetch_tasks; import pprint; pprint.pprint(_fetch_tasks())"` |
 | Any new logic | `.venv/bin/python -m pytest tests/ -q` — must show 0 failures |
 | Bot scripts / handlers | `python3 <script> --dry-run` or run in test mode |
-| Commit says run/execute/ship a `.py` script | Spawn the process and paste its PID or exit code in the same response (enforced by `script-run-verification` in `core/contracts.py`) |
+| Commit says run/execute/ship a `.py` script | Spawn the process and paste its PID or exit code in the same response (enforced by `script-run-verification` in `core/contracts/__init__.py`) |
 
 ## Violation recovery
 Remove "Done." claim, run the appropriate verification command, re-evaluate.

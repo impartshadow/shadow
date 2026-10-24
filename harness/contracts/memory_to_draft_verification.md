@@ -2,7 +2,7 @@
 
 **Type:** Pre-check (block before Write/post).
 **Failure mode:** FM-026.
-**Contract class:** `MemoryDraftVerificationGate` in `core/contracts.py`.
+**Contract class:** `MemoryDraftVerificationGate` in `core/contracts/__init__.py`.
 
 ## Trigger
 

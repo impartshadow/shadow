@@ -9,7 +9,7 @@
 - Warn (`severity=warn`) when MemAvailable < 500 MB and a spawn is being proposed.
 - Skip silently when no spawn signal is present, even if RAM is low — general low-memory state is not by itself a violation.
 
-**Enforcement:** `core/contracts.py:MemoryPressureGuard.check_pre()`.
+**Enforcement:** `core/contracts/conversation.py:MemoryPressureGuard.check_pre()`.
 
 Reads `/proc/meminfo` directly (no shell-out). Includes a 60 s same-severity
 debounce so a single memory dip cannot generate multiple identical warnings

@@ -19,9 +19,9 @@ A first-time claim with no prior receipt always passes (only logs a receipt).
 
 ## Enforcement
 
-**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+**Not code-enforced.** No gate for this contract exists in `core/contracts/__init__.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
 
-Code: `QuantitativeClaimReceiptContract` in `core/contracts.py`.
+Code: `QuantitativeClaimReceiptContract` in `core/contracts/__init__.py`.
 
 Two mechanisms:
 1. **Receipt emission** (always): every matched claim is appended to `state/loop_receipts.jsonl` with timestamp, session key, noun, verb, count, and a short context snippet.

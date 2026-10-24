@@ -2,7 +2,7 @@
 
 ## Type
 Pre-action gate — deterministic enforcement via
-`core/contracts.py:PortfolioSourceWriteGuard`. Severity: `block`.
+`core/contracts/code_ops.py:PortfolioSourceWriteGuard`. Severity: `block`.
 
 ## Failure mode
 FM-004 (parallel implementation) — a write reaches the portfolio authority

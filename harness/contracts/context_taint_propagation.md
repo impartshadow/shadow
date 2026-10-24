@@ -2,7 +2,7 @@
 
 **Type:** Pre-check — block on taint detection
 **Failure mode:** FM-034b (propagation-cascade contamination)
-**Status:** Tier 2 queue — code implementation pending (see `core/contracts.py`)
+**Status:** Tier 2 queue — code implementation pending (see `core/contracts/__init__.py`)
 
 ## Problem
 
@@ -32,7 +32,7 @@ Transitivity depth is capped at 3 to avoid false positives from long chains.
 
 ## Enforcement
 
-`ContextTaintContract` in `core/contracts.py` — see Tier 2 queue.
+`ContextTaintContract` in `core/contracts/__init__.py` — see Tier 2 queue.
 
 Until code enforcement is wired: apply manually — before re-using a tool result that appeared in the same session as a contract violation, verify it was not the active result when the violation fired.
 

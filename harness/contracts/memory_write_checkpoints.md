@@ -28,7 +28,7 @@ Inlining memory writes with response generation creates two problems: (1) it blo
 
 ## Enforcement
 
-Harness (manual discipline). Shadow self-enforces. A code gate (`MemoryWriteCheckpoint` in `core/contracts.py`) is tracked as Tier 2 future work.
+Harness (manual discipline). Shadow self-enforces. A code gate (`MemoryWriteCheckpoint` in `core/contracts/__init__.py`) is tracked as Tier 2 future work.
 
 ## Recovery
 

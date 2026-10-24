@@ -2,7 +2,7 @@
 
 ## Type
 Pre-tool-call guard — Haiku-judged enforcement via
-`core/contracts.py:ExternalQualityGate`. Severity: `block`. Fails OPEN.
+`core/contracts/outbound.py:ExternalQualityGate`. Severity: `block`. Fails OPEN.
 
 ## Standard
 the user's standing bar (2026-06-01): **everything Shadow ships to an external

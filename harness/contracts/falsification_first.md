@@ -14,7 +14,7 @@ Before synthesizing or presenting conclusions, ALL of the following must hold:
 4. The output does not lead with accumulating positives and append caveats at the end
 
 ## Enforcement
-**Harness-enforced** (doc-level). Code-enforcement (`FalsificationFirstGate` in `core/contracts.py`) is in Tier 2 backlog — pending the user review.
+**Harness-enforced** (doc-level). Code-enforcement (`FalsificationFirstGate` in `core/contracts/__init__.py`) is in Tier 2 backlog — pending the user review.
 
 For now: Shadow self-checks at Verify stage using the falsification audit step in `harness/skills/research.md`.
 

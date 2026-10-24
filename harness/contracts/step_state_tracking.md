@@ -35,7 +35,7 @@ The contract is satisfied if Shadow's response to a multi-step milestone:
 2. If stuck and never surfaced: post the block immediately with one alternative tried
 
 ## Future upgrade path
-If Shadow gains access to structured task logging with per-step outcomes, implement a `StepStateEvaluator` contract in `core/contracts.py` that:
+If Shadow gains access to structured task logging with per-step outcomes, implement a `StepStateEvaluator` contract in `core/contracts/__init__.py` that:
 - Maintains a per-session step trace
 - Computes confidence bounds (conformal-style) over recent step labels
 - Auto-escalates when ≥2 consecutive steps are labeled drifting/stuck

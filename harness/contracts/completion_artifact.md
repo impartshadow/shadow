@@ -26,7 +26,7 @@ verbs ("added", "updated", "modified", "created", "wired", "patched") used in
 mid-coding narration ("I added a guard to handle the empty case") do NOT trigger
 this gate — they fired 19 false positives in 24h before the narrowing.
 
-**Enforcement:** `core/contracts.py:CompletionArtifactContract.check_post()` —
+**Enforcement:** `core/contracts/claims.py:CompletionArtifactContract.check_post()` —
 `_DONE_WITH_WORK` regex (closure-signal only), `_PUSH_DONE` (past-tense commit
 framing), `_RUN_PATH` (cited test/file paths). Dirty-worktree state injected by
 `core/contract_guard.py:_dirty_worktree()` which already excludes

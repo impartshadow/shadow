@@ -1,7 +1,7 @@
 # API-first tool routing
 
 ## Type
-**Code-enforced pre-check** — `ApiFirstRoutingGuard` in `core/contracts.py` (FM-004, warn-only).
+**Code-enforced pre-check** — `ApiFirstRoutingGuard` in `core/contracts/__init__.py` (FM-004, warn-only).
 Fires when `browse_url` or `browser_open` targets a domain that has a canonical API client.
 See `harness/contracts/binding_time_principle.md` for the complementary design principle (not code-enforced).
 
@@ -20,7 +20,7 @@ When selecting a tool or automation approach, always prefer structured API route
 45x is a decision boundary, not a nudge. If an API path exists and Shadow chooses a GUI path instead, that is a routing error regardless of whether it succeeds.
 
 ## Enforcement
-- `core/contracts.py → ApiFirstRoutingGuard` (pre-check, warn, committed `b6ac60a`)
+- `core/contracts/__init__.py → ApiFirstRoutingGuard` (pre-check, warn, committed `b6ac60a`)
 - `tests/test_contracts.py → TestApiFirstRoutingGuard` (10 tests)
 
 ## Carve-outs

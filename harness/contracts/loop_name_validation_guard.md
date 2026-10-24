@@ -2,7 +2,7 @@
 
 ## Type
 Post-response guard — deterministic enforcement via
-`core/contracts.py:LoopNameValidationGuard`. Severity: `warn`.
+`core/contracts/retired.py:LoopNameValidationGuard`. Severity: `warn`.
 
 ## Failure mode
 FM-022 — referencing a loop name or ID that does not exist in

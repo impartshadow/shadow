@@ -2,7 +2,7 @@
 
 ## Type
 Post-response guard — deterministic enforcement via
-`core/contracts.py:RawToolCallLeakGuard`. Severity: `block`.
+`core/contracts/outbound.py:RawToolCallLeakGuard`. Severity: `block`.
 
 ## Trigger
 Fires on `action == "respond"` when the response text contains a raw JSON
@@ -31,7 +31,7 @@ Backlog reference: `20260610T081021_daily_friction_fixer_1b57`.
 None — the contract is a post-check that runs on every `respond` action.
 
 ## Enforcement
-Code: `core/contracts.py:RawToolCallLeakGuard.check_post`.
+Code: `core/contracts/outbound.py:RawToolCallLeakGuard.check_post`.
 Registered in `_ALL_CONTRACTS` after `HarnessScaffoldingLeakGuard`.
 
 ## Recovery

@@ -23,7 +23,7 @@ Before any iteration attempt, Shadow MUST complete a verify-first check:
 If a named error is found after Step 2, proceed with the correction and mark it: "(correcting: [what was wrong])"
 
 ## Enforcement
-Harness-side (prompt compliance). Code enforcement path: `VerifyFirstIterationContract` in `core/contracts.py` — detect retry-language patterns in outgoing response without a preceding explicit error identification.
+Harness-side (prompt compliance). Code enforcement path: `VerifyFirstIterationContract` in `core/contracts/__init__.py` — detect retry-language patterns in outgoing response without a preceding explicit error identification.
 
 ## Origin
 2026-04-28: arXiv paper *When Does LLM Self-Correction Help? A Control-Theoretic Markov Diagnostic and Verify-First Intervention* (cs.AI). Key finding: models with Error Introduction Rate (EIR) > 0.5% cause net degradation through blind self-correction. A verify-first prompt ablation reduced EIR from 2% → 0% on GPT-4o-mini and flipped a -6.2pp degradation to +0.2pp improvement. Shadow's multi-turn flows (loop-tripwire, behavioral stops) are exposed to this failure when retries happen without explicit error identification.

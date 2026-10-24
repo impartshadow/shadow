@@ -13,9 +13,9 @@ Detects when the same tool is called multiple times with errors in between, indi
 
 ## Enforcement
 
-**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+**Not code-enforced.** No gate for this contract exists in `core/contracts/__init__.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
 
-`ContextContaminationContract` in `core/contracts.py` scans the message history for repeated tool calls with intervening errors. When detected, logs a warning violation.
+`ContextContaminationContract` in `core/contracts/__init__.py` scans the message history for repeated tool calls with intervening errors. When detected, logs a warning violation.
 
 ## Recovery
 When this contract fires:

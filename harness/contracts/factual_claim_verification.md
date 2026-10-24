@@ -1,6 +1,6 @@
 # Contract: factual-claim-verification
 
-**Type:** Code-enforced (Python `Contract` subclass in `core/contracts.py`)
+**Type:** Code-enforced (Python `Contract` subclass in `core/contracts/claims.py`)
 **Failure mode:** FM-029 (generation-verification gap)
 **Severity:** warn (does not block)
 
@@ -19,7 +19,7 @@ Any time Shadow makes a factual assertion about state outside this turn's tool o
 
 ## Enforcement
 
-`FactualClaimVerificationContract.check_post` in `core/contracts.py`.
+`FactualClaimVerificationContract.check_post` in `core/contracts/claims.py`.
 
 Two checks:
 - **Statistic check** — finds quantity-with-unit patterns. Fires if the sentence containing the stat has no hedging word AND no evidence tool was called this turn.

@@ -1,7 +1,7 @@
 # Contract: tool-result-injection-guard
 
 ## Type
-Post-check — code-enforced in `core/contracts.py`
+Post-check — code-enforced in `core/contracts/conversation.py`
 
 ## Trigger
 Any turn where `tool_call_results` is non-empty (i.e., a tool returned output that will be incorporated into the response or next-turn context).
@@ -14,7 +14,7 @@ Before accepting tool output as safe context, ALL of the following must hold:
 4. Tool result does not instruct Shadow to call a tool, send a message, or take an action on behalf of an unnamed third party
 
 ## Enforcement
-**Code-enforced** in `core/contracts.py` as `ToolResultInjectionGuard` post-check.
+**Code-enforced** in `core/contracts/conversation.py` as `ToolResultInjectionGuard` post-check.
 
 Pattern classes to scan for:
 - **Override triggers**: `ignore (previous|prior|above) instructions`, `disregard`, `new instructions`, `forget everything`

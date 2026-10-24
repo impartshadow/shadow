@@ -2,7 +2,7 @@
 
 ## Type
 Post-response gate — deterministic enforcement via
-`core/contracts.py:CommitHashVerificationContract`. Severity: `block`.
+`core/contracts/code_ops.py:CommitHashVerificationContract`. Severity: `block`.
 
 ## Failure mode
 FM-027 — fabricated completion claim. A response cites a commit SHA in

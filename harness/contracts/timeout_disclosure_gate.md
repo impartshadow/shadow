@@ -3,7 +3,7 @@
 **Type:** Post-check (code-enforced, block severity, deterministic)
 **Failure mode:** FM-034 (factual-output-error — answering from pre-probe state)
 **Trigger:** Every response (`ctx.action == "respond"`)
-**Class:** `TimeoutDisclosureGate` in `core/contracts.py`
+**Class:** `TimeoutDisclosureGate` in `core/contracts/retired.py`
 
 **Complement to `timeout-claim-entailment-gate`.** That gate catches claims
 that *cite* timed-out evidence. This one catches the inverse failure: an

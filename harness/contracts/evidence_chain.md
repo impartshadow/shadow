@@ -16,7 +16,7 @@ proof-derived authorization research: ephemeral intent + action + outcome must b
 traceable even after the conversation context is cleared.
 
 This is an *audit trail*, not a gate. The Tier 2 upgrade path is a `CredentialPathIntentGuard`
-pre-check in `core/contracts.py` that requires a justification string before execution.
+pre-check in `core/contracts/__init__.py` that requires a justification string before execution.
 
 ## Record schema
 

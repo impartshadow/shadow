@@ -42,7 +42,7 @@ Before invoking a capability at stage Sn, the session must have completed at lea
 
 Harness-side + code target. The `step_state_tracking` contract handles within-stage drift. This contract governs cross-stage ordering.
 
-Code enforcement target: `core/contracts.py` — `SkillStageContract` subclass. Each registered skill should declare `stage: str` and `check_pre()` should reject invocations that violate the ordering above by comparing `ctx.current_stage` to `self.stage`.
+Code enforcement target: `core/contracts/__init__.py` — `SkillStageContract` subclass. Each registered skill should declare `stage: str` and `check_pre()` should reject invocations that violate the ordering above by comparing `ctx.current_stage` to `self.stage`.
 
 Until code enforcement is live, Shadow self-labels the current stage before each capability group invocation:
 - **RESEARCH**: "[S1: research]" before web search or file reads

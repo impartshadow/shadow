@@ -2,7 +2,7 @@
 
 ## Type
 Post-response gate — deterministic enforcement via
-`core/contracts.py:PlatformMessageIdClaimGuard`. Severity: `block`.
+`core/contracts/outbound.py:PlatformMessageIdClaimGuard`. Severity: `block`.
 
 ## Failure mode
 FM-027 (completion/fabrication family) — a response bullet or sentence

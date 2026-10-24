@@ -6,7 +6,7 @@
 
 **Precondition:** Anthropic SDK calls must route through `core/claude_client.py`.
 
-**Enforcement:** `core/contracts.py:DirectAnthropicImportGuard.check_pre()` blocks direct `import anthropic` / `from anthropic import ...` in new non-test code.
+**Enforcement:** `core/contracts/code_ops.py:DirectAnthropicImportGuard.check_pre()` blocks direct `import anthropic` / `from anthropic import ...` in new non-test code.
 
 **Recovery:** Use `core.claude_client` wrapper helpers instead of creating a local SDK client.
 

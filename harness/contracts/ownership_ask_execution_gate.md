@@ -1,6 +1,6 @@
 # Contract: ownership-ask-execution-gate
 
-**Type:** Code-enforced (Python `Contract` subclass in `core/contracts.py`)
+**Type:** Code-enforced (Python `Contract` subclass in `core/contracts/conversation.py`)
 **Failure mode:** FM-011 (explain-instead-of-act)
 **Severity:** block
 
@@ -41,6 +41,28 @@ the reply does cite artifact evidence but states no comparative choice
 Autonomy demands and accountability asks do not arm this branch: a first
 artifact against "do it yourself" is ordinary progress.
 
+**Branch C — principle saved, not applied (added 2026-10-24).** Fires when
+the user states a standing rule (sentence-initial `always`/`never`/`prefer`,
+`general principle`, `as a rule`, `from now on`) **and** the reply reports
+writing the rule down (`saved as a standing principle`, `noted the correction`)
+**and** either admits the application is unbuilt (`isn't built yet`, `still
+open`, `note that as a to-do`) or speaks in intent language **and** nothing
+beyond memory bookkeeping happened this turn. `record_decision`,
+`apply_correction`, `remember` and `memory_write` do not count as acting on
+this branch — the memory write is the failure shape, not the fix. A plain
+state report with no saved-rule language ("No. Changing it now.") passes, so
+the honest admission is never what gets blocked.
+
+Origin: 2026-10-24 #finance. the user: *"Yeah. Always try to fix upstream"* right
+after Shadow shipped a blocklist gate it had itself called whack-a-mole with
+an upstream fix proposed. Reply: *"Saved as a standing principle … the
+upstream fix isn't built yet. I'll note that as the next iteration."* the user
+then had to ask *"did you change the prompt guidance yet?"* and finally *"Fix
+it"* before the upstream change was made. Three routing turns for one
+instruction. The same principle now also lives upstream as a line in
+`conversation_rules()` (`core/identity.py`): apply a stated principle to the
+work in view in the same turn; recording it is not the fix.
+
 ## Why this shape
 
 Branch B deliberately does not key on the self-negating disclaimer Shadow kept
@@ -53,7 +75,8 @@ only be satisfied by doing the comparison.
 
 Replayed over all 4,757 user→assistant pairs in
 `state/discord_transcript.jsonl`: 4 fires, all four the replies the user objected
-to in the origin incident. An earlier draft armed on any `why do you keep ...`
+to in the origin incident. Branch C replayed 2026-10-24 over 5,619 pairs:
+2 fires, both the 02:26 and 02:30 #finance replies from its origin incident. An earlier draft armed on any `why do you keep ...`
 and fired on 7 legitimate root-cause answers ("why do you keep pushing my daily
 update after restart?"); that pattern was narrowed to the `half things` form.
 

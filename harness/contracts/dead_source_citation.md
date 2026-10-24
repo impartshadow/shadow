@@ -2,7 +2,7 @@
 
 ## Type
 Post-response gate — deterministic enforcement via
-`core/contracts.py:DeadSourceCitationGuard`. Severity: `block`.
+`core/contracts/retired.py:DeadSourceCitationGuard`. Severity: `block`.
 
 ## Failure mode
 FM-014 (read-a-stale-cache) — a response cites a `state/*.json(l)` file as

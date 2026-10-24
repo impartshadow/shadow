@@ -2,7 +2,7 @@
 
 ## Type
 Post-response gate — deterministic enforcement via
-`core/contracts.py:CryptoPriceClaimGuard`. Severity: `block`.
+`core/contracts/outbound.py:CryptoPriceClaimGuard`. Severity: `block`.
 
 ## Failure mode
 FM-026 — stale/fabricated live-state assertion. A response states a crypto

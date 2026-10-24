@@ -23,7 +23,7 @@ These are MCP tools that bypass all permission prompts. They always work.
 
 ## Enforcement
 **Not code-enforced.** No `CapabilityMisroute` class exists. Intended design was:
-**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
+**Status correction (2026-09-18):** this doc asserted code enforcement for a gate that does not exist in `core/contracts/__init__.py`. The rule is prompt-level only. Surfaced by `scripts/contract_law_registry.py`; promotion path is to implement the class, add it to `_ALL_CONTRACTS`, then restore the enforcement claim here.
 
 - Regex scan on response text for wrong tool names and denial patterns
 - Only allows denial if response contains actual MCP tool error output

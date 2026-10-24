@@ -1,6 +1,6 @@
 # Verified Failure Store
 
-**Type:** Supplementary memory contract (enforced in `core/deficiency_tracker.py` + `core/contracts.py`)
+**Type:** Supplementary memory contract (enforced in `core/deficiency_tracker.py` + `core/contracts/__init__.py`)
 
 **Trigger:** After any Contract violation that is followed by a successful tool call or explicit recovery confirmation within the same session.
 
@@ -16,7 +16,7 @@
   "ts": "ISO-8601",
   "contract": "verify-before-push",
   "failure_mode": "FM-002",
-  "trigger_context": "action=git_push, files_edited=[core/contracts.py]",
+  "trigger_context": "action=git_push, files_edited=[core/contracts/__init__.py]",
   "recovery_tool": "pytest",
   "recovery_confirmed": true
 }
@@ -26,4 +26,4 @@
 
 **Escalation:** When 3+ identical signatures accumulate, surface to `/improve` as a persistent pattern candidate for a new pre-check.
 
-**Implementation target:** `core/contracts.py:Contract.register_verified()` (Tier 2) + `core/deficiency_tracker.py:record_verified_recovery()` (Tier 1.5)
+**Implementation target:** `core/contracts/base.py:Contract.register_verified()` (Tier 2) + `core/deficiency_tracker.py:record_verified_recovery()` (Tier 1.5)

@@ -2,7 +2,7 @@
 
 **Failure mode:** FM-022 (self-consistency) — sycophancy subtype
 **Severity:** warn
-**Enforced by:** `PositionDriftUnderPushbackGuard` in `core/contracts.py`
+**Enforced by:** `PositionDriftUnderPushbackGuard` in `core/contracts/conversation.py`
 
 ## Rule
 

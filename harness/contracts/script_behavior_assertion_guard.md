@@ -6,7 +6,7 @@
 
 **Precondition:** If the response asserts a behavior claim about an internal Shadow script (e.g., "/reflect only diagnoses", "nightly.py doesn't restart the bot", "session_audit doesn't write to memory"), a `Read` or `Grep` of that script must have run in the same turn.
 
-**Enforcement:** `core/contracts.py:ScriptBehaviorAssertionGuard.check_post()` — matches a curated list of high-churn scripts (`reflect.py`, `nightly.py`, `session_audit.py`, `heartbeat.py`, `moonshot_daily.py`, `daily_friction_fixer.py`, `anticipation*.py`, `credential_guardian.py`, `loop_dispatcher.py`, `twitter_engage.py`, `moltbook_engage.py`, `substack_publish.py`) plus assertion phrases (`only diagnoses`, `doesn't write`, `has no code-edit loop`, `diagnose-only`, etc.). Passes if a live read tool touched the named script this turn.
+**Enforcement:** `core/contracts/retired.py:ScriptBehaviorAssertionGuard.check_post()` — matches a curated list of high-churn scripts (`reflect.py`, `nightly.py`, `session_audit.py`, `heartbeat.py`, `moonshot_daily.py`, `daily_friction_fixer.py`, `anticipation*.py`, `credential_guardian.py`, `loop_dispatcher.py`, `twitter_engage.py`, `moltbook_engage.py`, `substack_publish.py`) plus assertion phrases (`only diagnoses`, `doesn't write`, `has no code-edit loop`, `diagnose-only`, etc.). Passes if a live read tool touched the named script this turn.
 
 **Severity:** warn — not block. Some assertions are correctly grounded in a Read that the regex can't trivially confirm; the trace log lets `session_audit.py` catch persistent recurrence.
 

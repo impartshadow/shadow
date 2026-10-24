@@ -3,7 +3,7 @@
 **Type:** Behavioral pre-check (harness)
 **Trigger:** Any irreversible action — email send, git push, Substack publish, Discord DM, webhook
 **Precondition:** Shadow has articulated a causal commitment before executing
-**Enforcement:** Harness prompt + CausalInterventionGate contract in `core/contracts.py` (Tier 2)
+**Enforcement:** Harness prompt + CausalInterventionGate contract in `core/contracts/__init__.py` (Tier 2)
 **Recovery:** If commitment cannot be made → downgrade to EXPERIMENT (dry-run first)
 **Escalation:** If EXPERIMENT output is ambiguous → ABSTAIN and surface to the user
 

@@ -1,7 +1,7 @@
 # Contract: fabricated-gap-guard
 
 ## Type
-Post-response guard — deterministic enforcement via `core/contracts.py`
+Post-response guard — deterministic enforcement via `core/contracts/retired.py`
 
 ## Trigger
 Any response that claims Shadow infrastructure is missing, needed, or
@@ -20,7 +20,7 @@ be true in the same turn:
 4. An MCP Shadow tool surfaced the relevant state
 
 ## Enforcement
-**Code-enforced** in `core/contracts.py:FabricatedGapGuard` — scans outgoing
+**Code-enforced** in `core/contracts/retired.py:FabricatedGapGuard` — scans outgoing
 responses for gap-claim patterns co-occurring with Shadow-infra vocabulary,
 and fires when no investigation tool was called this turn.
 

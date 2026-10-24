@@ -43,7 +43,7 @@ The contract is satisfied if Shadow's response to a structured extraction task:
 2. If repair reveals >25% of items are unsupported: discard and re-extract from scratch
 
 ## Future upgrade path
-If Shadow gains structured task logging, implement a `RepairLoopContract` in `core/contracts.py` that:
+If Shadow gains structured task logging, implement a `RepairLoopContract` in `core/contracts/__init__.py` that:
 - Detects structured-extraction task type from prompt keywords ("extract", "list", "schema", "gaps")
 - Requires a `odr_validated: true` flag in task completion metadata
 - On missing flag: auto-injects a repair-pass prompt before allowing done signal

@@ -5,7 +5,7 @@
 
 ## Trigger
 
-Any `/improve` run that generates or modifies a Contract subclass in `core/contracts.py`.
+Any `/improve` run that generates or modifies a Contract subclass in `core/contracts/__init__.py`.
 
 ## Precondition
 

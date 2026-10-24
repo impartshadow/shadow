@@ -2,7 +2,7 @@
 
 ## Type
 Pre-action gate — deterministic enforcement via
-`core/contracts.py:GmailSenderIdentityGuard`. Severity: `block`.
+`core/contracts/outbound.py:GmailSenderIdentityGuard`. Severity: `block`.
 
 ## Failure mode
 FM-023 (identity/PII leakage) — an outbound Gmail send is constructed with
@@ -15,7 +15,7 @@ to inbox reads (`gmail_summary.py <personal> …`), but it is never a valid
 **sender** — business sends originate from the business account.
 
 The literal token and the business sender address are defined once, in
-`core/contracts.py:GmailSenderIdentityGuard` (`_PERSONAL_TOKEN`) and the
+`core/contracts/outbound.py:GmailSenderIdentityGuard` (`_PERSONAL_TOKEN`) and the
 standing-authority section of `CLAUDE.md`. This document deliberately does
 not restate the address, so the identifier does not spread across the repo.
 

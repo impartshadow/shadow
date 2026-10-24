@@ -48,7 +48,7 @@ Note: parallel agents must receive *different* seed URLs or search queries. Do n
 
 ## Enforcement
 
-Tier 2 code contract: `AgentInvocationScopeContract` in `core/contracts.py`.
+Tier 2 code contract: `AgentInvocationScopeContract` in `core/contracts/__init__.py`.
 Checks `tool_params` for Agent calls — blocks if `description` is absent; warns if the prompt has no budget/stop signal and the description implies open-ended work. Warns (not blocks) when two or more Agent calls appear in the same turn and none of their prompts include a tool-restriction phrase.
 
 ## Recovery

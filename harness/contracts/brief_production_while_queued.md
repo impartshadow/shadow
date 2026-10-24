@@ -2,7 +2,7 @@
 
 ## Type
 Pre-action guard — deterministic enforcement via
-`core/contracts.py:BriefProductionWhileQueuedGuard.check_pre()`.
+`core/contracts/code_ops.py:BriefProductionWhileQueuedGuard.check_pre()`.
 Severity: `block`.
 
 ## Failure mode

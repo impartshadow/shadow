@@ -6,7 +6,7 @@
 
 **Precondition:** Push target branch must match the current feature branch or main. Remote must be the expected origin.
 
-**Enforcement:** `core/contracts.py:GitPushTargetGuard.check_pre()` — validates remote and branch before allowing push.
+**Enforcement:** `core/contracts/code_ops.py:GitPushTargetGuard.check_pre()` — validates remote and branch before allowing push.
 
 **Recovery:** Confirm target branch. Never force-push to main without explicit user instruction.
 

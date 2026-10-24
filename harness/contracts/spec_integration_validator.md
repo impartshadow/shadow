@@ -4,7 +4,7 @@
 Post-action check — Haiku-judged, warn-only.
 
 ## Trigger
-Any `/improve` Level 2 run that successfully injects a new contract into `core/contracts.py`.
+Any `/improve` Level 2 run that successfully injects a new contract into `core/contracts/__init__.py`.
 
 ## The problem this solves
 
@@ -19,7 +19,7 @@ AIRA-Design demonstrated that an agent-as-verifier step after each architecture 
 ## Precondition
 
 This contract fires after:
-1. A new Contract subclass has been written to `core/contracts.py`.
+1. A new Contract subclass has been written to `core/contracts/__init__.py`.
 2. `pytest tests/test_contracts.py` has passed.
 3. The new class name is known.
 

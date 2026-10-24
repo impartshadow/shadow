@@ -19,7 +19,7 @@ When adding or revising a tool-routing rule, check `state/contract_violations.js
 ## Contracts referenced
 - `capability_misroute.md` — primary target for future upgrade
 - `pre_denial_gate.md` — secondary target
-- `wrong_tool_route` (in `core/contracts.py`) — static regex; candidate for data-informed threshold
+- `wrong_tool_route` (in `core/contracts/__init__.py`) — static regex; candidate for data-informed threshold
 
 ## Escalation
 When tool_failure_rates() shows a tool appearing in 5+ violations in 7 days and no contract covers it, flag to the user as a gap in routing coverage.

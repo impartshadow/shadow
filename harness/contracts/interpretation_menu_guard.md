@@ -2,7 +2,7 @@
 
 **Type:** Post-check (code-enforced, deterministic regex)
 **Failure mode:** FM-013 (clarification-quality — asking the wrong question)
-**Enforcement:** `core/contracts.py:InterpretationMenuGuard.check_post()`
+**Enforcement:** `core/contracts/retired.py:InterpretationMenuGuard.check_post()`
 
 ## Trigger
 

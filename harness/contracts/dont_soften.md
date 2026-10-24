@@ -31,7 +31,7 @@ If any of (1)-(3) are true, revise to remove the softening before sending.
 Harness-side only (self-check). No code enforcement yet — code enforcement is gated on reliable domain classification.
 
 **Promotion path:**
-- Add domain classifier in `core/contracts.py` that detects personal-guidance framing in the user's message
+- Add domain classifier in `core/contracts/__init__.py` that detects personal-guidance framing in the user's message
 - Call Haiku to flag responses that pattern-match on softening language before posting
 - Minimum 20 harness-confirmed violations before promoting to block severity
 

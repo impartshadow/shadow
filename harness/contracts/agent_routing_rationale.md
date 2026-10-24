@@ -49,7 +49,7 @@ DecisionBench shows that on-demand context retrieval inside the sub-agent degrad
 
 ## Enforcement
 
-Harness-behavioral (Tier 1). Tier 2 queue: `AgentRoutingRationaleContract` in `core/contracts.py`.
+Harness-behavioral (Tier 1). Tier 2 queue: `AgentRoutingRationaleContract` in `core/contracts/__init__.py`.
 
 ## Recovery
 

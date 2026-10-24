@@ -2,7 +2,7 @@
 
 ## Type
 Post-response gate — deterministic enforcement via
-`core/contracts.py:SelfStoppageClaimGuard`. Severity: **block**.
+`core/contracts/retired.py:SelfStoppageClaimGuard`. Severity: **block**.
 
 ## Failure mode
 FM-022 — self-referential 1st-person past-tense stoppage claim asserted from

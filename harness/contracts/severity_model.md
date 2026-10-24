@@ -32,4 +32,4 @@ Use the `violation_count` threshold as a secondary signal:
 
 - `DeficiencyTracker.priority_rank()` weights by `severity × recency_decay × frequency`
 - `/improve` reads `priority_rank()` to choose which contracts to strengthen first
-- `Violation.severity` in `core/contracts.py` maps to these labels (not just `warn`/`block`)
+- `Violation.severity` in `core/contracts/__init__.py` maps to these labels (not just `warn`/`block`)

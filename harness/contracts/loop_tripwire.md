@@ -6,7 +6,7 @@
 
 **Precondition:** Target file has been committed to git fewer than 2 times in the current session (warn) / fewer than 3 times (block).
 
-**Enforcement:** `core/contracts.py:LoopTripwire.check_pre()` — counts commits to each file within the current session. On `edit_file`, the looped file must appear in `ctx.files_edited` for the contract to fire (narrowed 2026-05-28 to avoid 8 false positives where the contract fired on every unrelated edit once any file hit threshold).
+**Enforcement:** `core/contracts/code_ops.py:LoopTripwire.check_pre()` — counts commits to each file within the current session. On `edit_file`, the looped file must appear in `ctx.files_edited` for the contract to fire (narrowed 2026-05-28 to avoid 8 false positives where the contract fired on every unrelated edit once any file hit threshold).
 
 **Recovery:** Stop editing the file. Diagnose root cause of the loop. Commit a fix, get it verified, then continue.
 

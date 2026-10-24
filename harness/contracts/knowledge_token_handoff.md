@@ -41,7 +41,7 @@ If no clear signals emerged this session (e.g., pure execution with no learning)
 
 ## Enforcement
 
-Convention — enforced by harness training. `core/contracts.py` behavioral-haiku-guard catches responses that contradict prior decisions (FM-022); this contract provides the structured surface that guard reads from.
+Convention — enforced by harness training. `core/contracts/__init__.py` behavioral-haiku-guard catches responses that contradict prior decisions (FM-022); this contract provides the structured surface that guard reads from.
 
 ## Escalation
 

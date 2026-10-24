@@ -2,7 +2,7 @@
 
 **Type:** Post-condition (warn), session-scoped
 **Failure mode:** FM-003 (loop / runaway behavior)
-**Status:** Planned — Tier 2, pending code implementation in core/contracts.py
+**Status:** Planned — Tier 2, pending code implementation in core/contracts/__init__.py
 
 ## What it enforces
 
@@ -22,7 +22,7 @@ Fires on `action == 'respond'` when session tool history is available.
 
 ## Enforcement
 
-**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+**Not code-enforced.** No gate for this contract exists in `core/contracts/__init__.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
 
 Not code-enforced; prompt-level only (a gate was planned, never written). Severity: `warn` (not block — legitimate power-user sessions can touch many tools).
 

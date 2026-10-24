@@ -2,7 +2,7 @@
 
 **Type:** Code-enforced post-check (warn severity)
 **Failure mode:** FM-014 (self-referential-monitor sub-case of completion integrity)
-**Location:** `core/contracts.py` → `class MonitorExonerationEvidenceGuard`
+**Location:** `core/contracts/retired.py` → `class MonitorExonerationEvidenceGuard`
 
 ## Trigger
 

@@ -2,7 +2,7 @@
 
 ## Type
 Pre-tool-call guard — deterministic enforcement via
-`core/contracts.py:DoxGuard`. Severity: `block`.
+`core/contracts/outbound.py:DoxGuard`. Severity: `block`.
 
 ## Threat model
 The the user<->Shadow Discord channel is a **private two-way conversation**.
@@ -99,7 +99,7 @@ Matching:
 - Phone regex (with/without parens, country code, separators)
 
 ## Deny-list
-`DoxGuard._DENY_LIST` in `core/contracts.py`. Currently:
+`DoxGuard._DENY_LIST` in `core/contracts/outbound.py`. Currently:
 - `[private-email]`, `[public-contact-email]`
 - Bare handles `[private-handle]`, `[public-handle]`
 - `the user` as multi-word phrase (last-name alone is common — not

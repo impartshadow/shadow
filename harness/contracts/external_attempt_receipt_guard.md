@@ -1,6 +1,6 @@
 # external-attempt-receipt-guard
 
-**Type:** Code-enforced post-check (`core/contracts.py:ExternalAttemptReceiptGuard`)
+**Type:** Code-enforced post-check (`core/contracts/outbound.py:ExternalAttemptReceiptGuard`)
 **Failure mode:** FM-029.b — fabricated external fetch-attempt receipt
 **Severity:** block
 

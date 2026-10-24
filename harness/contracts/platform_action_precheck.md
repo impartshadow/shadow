@@ -1,7 +1,7 @@
 # platform-action-precheck
 
 ## Type
-**Code-enforced pre + post check** — `PlatformActionPreCheck` in `core/contracts.py` (FM-012).
+**Code-enforced pre + post check** — `PlatformActionPreCheck` in `core/contracts/outbound.py` (FM-012).
 Pre-check is `info` severity (advisory steering signal; trajectory event fires
 for learning, but ledger write is suppressed so pre-check fires don't inflate
 the ≥2/4h recurrence thresholds used by the gap-closer + intraday alarms).
@@ -27,8 +27,8 @@ target channel/recipient must match content type — see `feedback_discord_routi
 (`#work=Epic` only, noise→`shadow-log`, user-facing→`shadow-hq`).
 
 ## Enforcement
-- `core/contracts.py:PlatformActionPreCheck.check_pre()` — pre-check warn (steering signal)
-- `core/contracts.py:PlatformActionPreCheck.check_post()` — post-check block
+- `core/contracts/outbound.py:PlatformActionPreCheck.check_pre()` — pre-check warn (steering signal)
+- `core/contracts/outbound.py:PlatformActionPreCheck.check_post()` — post-check block
 - `tests/test_contracts.py` — see `TestPlatformActionPreCheck` cases
 
 ## Carve-outs

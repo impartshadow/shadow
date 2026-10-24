@@ -1,6 +1,6 @@
 # Contract: task-reframe-guard
 
-**Type:** Code-enforced (Python `Contract` subclass in `core/contracts.py`)
+**Type:** Code-enforced (Python `Contract` subclass in `core/contracts/retired.py`)
 **Failure mode:** FM-025 (silent mid-session task model pivot)
 **Severity:** warn (does not block)
 
@@ -26,7 +26,7 @@ direction before downstream work proceeds on the new track.
 
 ## Enforcement
 
-`TaskReframeGuard.check_post` in `core/contracts.py`.
+`TaskReframeGuard.check_post` in `core/contracts/retired.py`.
 
 State is keyed at the class level (`_last_task: dict[session_key →
 (task_text, ts_unix)]`); session-aware keying is a follow-up.

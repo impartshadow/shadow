@@ -2,7 +2,7 @@
 
 **Type:** Pre-check (block)
 **Failure mode:** FM-011 (action deferral / unnecessary escalation)
-**Enforcement:** `core/contracts.py → TrustCalibrationContract`
+**Enforcement:** `core/contracts/__init__.py → TrustCalibrationContract`
 
 ## Purpose
 

@@ -58,5 +58,5 @@ in `tests/test_third_party_outbound_authorization_gate.py`.
 
 ## Enforcement
 
-**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+**Not code-enforced.** No gate for this contract exists in `core/contracts/__init__.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
 

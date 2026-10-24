@@ -3,7 +3,7 @@
 ## Type
 
 Pre-response deterministic gate implemented by
-`core/contracts.py:TypedClaimEntailmentGate`. Severity: `block`.
+`core/contracts/claims.py:TypedClaimEntailmentGate`. Severity: `block`.
 
 ## Trigger boundary
 

@@ -4,7 +4,7 @@
 deployment state as the wrong answer, the reply to that envelope may not lead
 with deployment state.
 
-**Enforcement:** `core/contracts.py:FlaggedResumeDeploymentLedeGate.check_post()`.
+**Enforcement:** `core/contracts/retired.py:FlaggedResumeDeploymentLedeGate.check_post()`.
 Severity: `block`, no auto-recovery.
 
 ## Origin

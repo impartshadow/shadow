@@ -1,6 +1,6 @@
 # handoff-integrity-check
 
-**Type:** Pre-check (prompt-level; not code-enforced in `core/contracts.py`)
+**Type:** Pre-check (prompt-level; not code-enforced in `core/contracts/__init__.py`)
 **Failure mode:** FM-022 (self-consistency)
 **Status:** Tier 2 — pending implementation
 
@@ -16,9 +16,9 @@ Tool call results feeding into downstream context must:
 
 ## Enforcement
 
-**Not code-enforced.** No gate for this contract exists in `core/contracts.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
+**Not code-enforced.** No gate for this contract exists in `core/contracts/__init__.py` or elsewhere; enforcement is prompt-level only. The mechanism described below is the intended design, not implemented behavior. Tracked by `scripts/contract_law_registry.py`.
 
-`HandoffIntegrityCheck` in `core/contracts.py` — pre-check that validates `ContractContext.tool_call_results` against registered stage schemas before the next tool call is allowed.
+`HandoffIntegrityCheck` in `core/contracts/__init__.py` — pre-check that validates `ContractContext.tool_call_results` against registered stage schemas before the next tool call is allowed.
 
 ## Recovery
 
