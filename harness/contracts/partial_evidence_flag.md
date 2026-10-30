@@ -26,6 +26,11 @@ The flag must appear at the same level as the findings — not buried in a footn
 
 NEVER answer as if retrieval was exhaustive when it was bounded. This is the failure mode: a question like "do we have any contacts in fintech?" answered from a partial Gmail search, stated as a definitive "no."
 
+Multi-platform releases (games, apps, features): before calling a release summary
+complete, check and state availability/timing separately for each platform the user uses
+(iOS first). Leaving out a per-platform caveat, such as "iOS later" or "PC only at launch",
+is the same as treating the evidence as exhaustive. (Motivated by: Melvor Idle 2 summary that missed its iOS release caveat.)
+
 ## Recovery
 If a research response is posted without a scope flag and retrieval was bounded:
 1. Append a scope note before the response is considered complete
