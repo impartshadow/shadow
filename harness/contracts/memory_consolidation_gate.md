@@ -12,7 +12,7 @@
 - Merging overlapping files → only during explicit `/improve` runs
 - Deleting memory files → only during explicit `/improve` runs after audit
 
-**Enforcement:** Prose (behavioral). The idle_moonshot `memory_consolidation` task is audit-only — it identifies candidates but does not execute merges. `dreaming.py` and `memory_consolidate.py` are gated to explicit invocation only, never auto-scheduled.
+**Enforcement:** Prose (behavioral). `dreaming.py` and `memory_consolidate.py` are gated to explicit invocation only, never auto-scheduled.
 
 **Recovery:** If a background task attempts a memory merge, abort and post the candidate list to #moonshot instead. Do not merge.
 

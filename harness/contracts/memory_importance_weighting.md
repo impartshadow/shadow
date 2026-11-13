@@ -54,4 +54,4 @@ Never escalate. This is routine maintenance, not a the user decision.
 
 ## Rationale
 
-Inspired by MEMTIER (2026): tiered agent memory with PPO-tuned five-signal retrieval achieves 7.6x recall improvement over flat-file baselines on LongMemEval-S. Shadow's original contract used recency+category only; the five-signal extension captures the same dimensions MEMTIER identifies as load-bearing. The async consolidation daemon pattern (episodic→semantic promotion without blocking the main loop) maps directly onto Shadow's idle_moonshot.py architecture.
+Inspired by MEMTIER (2026): tiered agent memory with PPO-tuned five-signal retrieval achieves 7.6x recall improvement over flat-file baselines on LongMemEval-S. Shadow's original contract used recency+category only; the five-signal extension captures the same dimensions MEMTIER identifies as load-bearing.

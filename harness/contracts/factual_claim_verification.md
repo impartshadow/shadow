@@ -8,7 +8,7 @@
 
 Fires post-response when both are true:
 
-1. The response contains either an uncited statistic (number + unit like `%`, `users`, `days`, `months`) OR a project-name assertion involving an active project (`arbor`, `anvil`, `awg`, `moltbook`, `echo`, `substack`, `stripe`).
+1. The response contains either an uncited statistic (number + count unit like `%`, `/`, `per`, `users`, `customers` — bare durations like `16 weeks` are not statistics) OR a project-name assertion involving an active project (`arbor`, `anvil`, `awg`, `moltbook`, `echo`, `substack`, `stripe`).
 2. No evidence-producing tool was called in this turn (the canonical set lives in `_EVIDENCE_TOOLS` on the contract — currently `Read`, `Bash`, `Grep`, `Glob`, and the `mcp__shadow__*` retrieval tools).
 
 If the response opens with an evidence-source tool call (or contains hedging words like `appears`, `seems`, `based on`), the contract is silent.
@@ -36,6 +36,17 @@ The contract is warn-only because some claims (recent in-context observations fr
 ## Escalation
 
 No automatic escalation. Repeated fires in a single session indicate the agent is making assertions from memory instead of from live state — surface in the next session handoff or session-audit report.
+
+## Why durations were dropped (2026-11-10)
+
+Bare duration units (`days`, `weeks`, `hours`, ...) were removed from the stat
+pattern. Six earlier carve-outs (plan-duration, historical-window, SLA,
+hyphen-duration, legal-deadline, after-N) all patched duration false positives
+one domain at a time; the 7th instance was 4 fires/4h on prenatal gestational
+ages ("16 weeks pregnant"). A duration alone does not state a fact about Shadow;
+duration claims about Shadow projects ("Echo hasn't posted in 11 days") are still
+caught by the project-assertion branch. `WebSearch`/`WebFetch` were also added to
+`_EVIDENCE_TOOLS` for parity with sibling contracts.
 
 ## Why partnership-split suppression (2026-07-19)
 

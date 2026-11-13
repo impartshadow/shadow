@@ -25,7 +25,7 @@ Evidence-free facts (preferences, behavioral rules, communication style) do NOT 
 - `last_verified` > 90 days OR no marker: treat as unverified; run a fresh lookup before citing or acting
 
 ## Enforcement
-The `stale_memory_freshness` idle task (idle_moonshot.py) enforces this passively by surfacing stale candidates weekly. During active sessions: if citing a versioned fact from a file with no `last_verified` marker, assume file mtime as the verification date and apply the decay rule.
+During active sessions: if citing a versioned fact from a file with no `last_verified` marker, assume file mtime as the verification date and apply the decay rule.
 
 ## Recovery
 On stale-fact detection: verify immediately, update the memory file with corrected value + fresh `last_verified`, never act on the stale version.

@@ -11,7 +11,6 @@ When the user signs off ("I'm going to bed", "let's pick up tomorrow", "keep wor
 The fix is a structured decomposition of the user's last strategic thread into an ordered, time-budgeted overnight queue, with a morning brief that summarizes what landed and what's next.
 
 Backlog origin: `20260614T075704_interaction_theme_an_2627` (overnight ambiguity, 2026-06-14).
-Adjacent infrastructure: `scripts/idle_moonshot.py` (idle micro-tasks), `scripts/daily_commander_brief.py` (6am brief).
 
 ## When to use
 
@@ -80,6 +79,5 @@ The 2026-06-14 overnight session produced sprawling output without a clear strat
 ## Reference
 
 - Script: `scripts/daily_commander_brief.py` (6am brief — overnight queue feeds into this)
-- Script: `scripts/idle_moonshot.py` (idle micro-tasks — distinct from overnight queue; runs from cron, not end-of-session)
 - Memory: `feedback_distribution_over_production.md` (rule #17 — overnight tasks favor distribution when briefs are queued)
 - CLAUDE.md rule #26 (multi-step task flows execute end-to-end in one pass)

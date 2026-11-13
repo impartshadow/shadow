@@ -447,12 +447,9 @@ ActionDeferralGuard reconnaissance-tool exemption create a three-way gap.
 **Root cause:** Stop directives accumulate in `state/behavioral_stops.json` but the response generator regenerates the corrected pattern because (1) the upstream prompt/template still contains the trigger, (2) the rule isn't prominent in CLAUDE.md quick reference, or (3) the original stop directive was mis-mined (e.g. source-redirect mistaken for behavioral stop) and the contract retries against a stop that no longer applies.
 **Rate:** 6/24h on 2026-06-12 (3 of which were a single mis-mined "Innermost Loop newsletter" source-redirect; filtered at load time after gap-closer 2026-06-12).
 **Contracts:**
-- `PersistentCorrectionGuard` (`persistent-correction`, warn/block) — Haiku/Gemini scores response against each surviving stop in `state/behavioral_stops.json`. Block threshold 0.85, warn 0.72. Source-redirect directives ("switch to X", "find Y instead") are filtered at load time (gap-closer 2026-06-12). Per-original-message dedup at load time (gap-closer prior session — 13 variants of one correction).
 - `WeBuiltAttribution` (`we-built-attribution`, block) — Specialized check for the #1 recurring stop ("Shadow built" not "we built").
 **Code guards:**
-- `core/contracts/retired.py:PersistentCorrectionGuard` — load-time stop filter + dedup + Haiku/Gemini scoring; per-stop confidence threshold configurable via `state/persistent_correction_config.json`.
 - `scripts/behavioral_stops_miner.py` — nightly miner; dedupes at write time after gap-closer found Haiku producing 13 directive variants per origin correction.
-- `scripts/persistent_correction_falsification.py` — validates that recent blocks were true positives; reverts the threshold (`state/persistent_correction_config.json`) if false-positive rate is high.
 **Recovery:** (1) Read the stop directive. (2) Identify the upstream source of the regenerating pattern — usually a prompt template under `prompts/`, `skills/`, or a heartbeat/digest renderer. (3) Patch the source so the pattern can't regenerate, then add the stop as a quick-reference rule in CLAUDE.md if not already present. (4) For mis-mined stops, file an issue against the miner; the load-time filter + dedup catches most of these but new patterns need explicit filters.
 **Escalation:** Surface to the user only when an architectural rework is required (e.g., a stop that requires reshaping a whole response pipeline). Day-to-day stops are closed silently — the user should never have to re-issue the same correction twice.
 **Audit signal:** `scripts/session_audit.py` scores FM-033 from 0–10 against five FM-033 markers in the rolling conversation window; score appears in `state/last_self_audit.json`. Score ≥7/10 for 3 consecutive sessions closes any high-priority backlog item that referenced FM-033.
@@ -1099,7 +1096,6 @@ one: the origin draft.
 
 **Root cause:** A timeout is a non-result, but it arrives in the same slot as a result. Without a structural gate, the turn treats "no answer returned" as "nothing to report" and the response silently reverts to prior belief.
 
-**Contract:** `TimeoutDisclosureGate` (block, post-check on `respond`), `core/contracts/__init__.py`.
 
 **Code guard:** Timeouts are read only from structured fields on `ContractContext.tool_call_results` — `result_status == "timeout"`, `exit_code == 124`, or `error_type` in `{TimeoutExpired, TimeoutError, ReadTimeout, CommandTimeout}`. Result prose is never keyword-scanned, so a command whose output mentions "timeout" is not flagged. A timed-out call is exempt when a later call with the same tool and identical params succeeded (the retry, not the abandonment, is what the response describes).
 
@@ -1127,7 +1123,7 @@ one: the origin draft.
 
 **Pattern:** A tool call times out, and the next move is the same call again — same tool, byte-identical params, same budget. The retry runs the same work against the same deadline and times out again. Two or three rounds later the turn ends with no authoritative result, and the response is left either claiming from pre-probe state (FM-014) or disclosing a timeout that was never actually escalated against (FM-034).
 
-**Enforcement:** `TimeoutRetryBudgetGate` (`timeout-retry-budget-gate`, `check_pre`, severity `block`). A pending call is a violation only when `(tool, canonicalized params)` is byte-identical to an earlier `tool_call_results` entry that timed out and was never superseded by a later success with the same key. Timeout classification is delegated to `TimeoutDisclosureGate._is_timeout` / `._is_success` / `._call_key`, so structured fields (`result_status == "timeout"`, `exit_code == 124`, timeout `error_type`) are the only signal — result prose is never scanned.
+**Enforcement:** `TimeoutRetryBudgetGate` (`timeout-retry-budget-gate`, `check_pre`, severity `block`). A pending call is a violation only when `(tool, canonicalized params)` is byte-identical to an earlier `tool_call_results` entry that timed out and was never superseded by a later success with the same key. Timeout classification is delegated to `core/contracts/timeouts.py` shared timeout helpers, so structured fields (`result_status == "timeout"`, `exit_code == 124`, timeout `error_type`) are the only signal — result prose is never scanned.
 
 **Escape hatch is structural, not phrasal:** any change to the call — a raised `timeout`, a narrower path, a smaller page size, a split into steps — produces a different key and passes. There is no wording that bypasses the gate and no wording that trips it.
 
@@ -1157,7 +1153,7 @@ one: the origin draft.
 
 **Pattern:** A call times out and is re-issued in a form that *looks* changed but costs the same — the command re-wrapped or re-spaced, a flag reordered, a `timeout` dropped or lowered rather than raised. FM-045's byte-identical key check sees two different calls and passes, so the loop it exists to break continues one edit-shaped retry at a time, ending in the same state: no authoritative result, and a response left either claiming from pre-probe state (FM-014) or disclosing a timeout that was never escalated against (FM-034).
 
-**Enforcement:** `TimeoutRetryEscalationGate` (`timeout-retry-escalation-gate`, `check_pre`, severity `block`). Pending and prior calls are reduced to a *work key* — `(tool, params)` with whitespace collapsed in every string and all budget keys (`timeout`, `timeout_ms`, `deadline`, `max_wait`, …) stripped. A pending call is a violation only when its work key matches an unresolved timed-out entry in `tool_call_results` and the pending call does not name a strictly larger timeout budget than the one that already expired. Timeout and success classification is delegated to `TimeoutDisclosureGate._is_timeout` / `._is_success` / `._call_key`, so structured fields are the only signal and result prose is never scanned.
+**Enforcement:** `TimeoutRetryEscalationGate` (`timeout-retry-escalation-gate`, `check_pre`, severity `block`). Pending and prior calls are reduced to a *work key* — `(tool, params)` with whitespace collapsed in every string and all budget keys (`timeout`, `timeout_ms`, `deadline`, `max_wait`, …) stripped. A pending call is a violation only when its work key matches an unresolved timed-out entry in `tool_call_results` and the pending call does not name a strictly larger timeout budget than the one that already expired. Timeout and success classification is delegated to `core/contracts/timeouts.py` shared timeout helpers, so structured fields are the only signal and result prose is never scanned.
 
 **Escape hatch is structural, not phrasal:** a narrowed scope changes a non-budget param, which changes the work key, which means no match and no check — the gate can only fire on a call whose substantive params are unchanged. A raised budget passes explicitly. As with FM-045, no wording bypasses the gate and no wording trips it.
 
@@ -1198,7 +1194,7 @@ one: the origin draft.
 
 **Status:** NOT ENFORCED — gate generated 2026-09-27 but refused by the tripped self-commit ratchet; quarantined at `artifacts/ratchet_quarantine/2026-09-27_TimeoutEvidenceClassificationGate.patch` pending the user's review.
 
-**Proposed enforcement:** `timeout-evidence-classification-gate` (block) would apply the FM-014.e entailment rule using the family's shared classifier (`TimeoutDisclosureGate._is_timeout`). It fires only on records where `result_status != "timeout"`, so it never double-reports with FM-014.e. When structured fields conflict, the timeout signal wins. The only permitted claim is a `direct` report of the record's own timeout signal (`evidence.exit_code == 124` or `evidence.error_type`). Result prose is never keyword-scanned.
+**Proposed enforcement:** `timeout-evidence-classification-gate` (block) would apply the FM-014.e entailment rule using the family's shared classifier (`core.contracts.timeouts._is_timeout`). It fires only on records where `result_status != "timeout"`, so it never double-reports with FM-014.e. When structured fields conflict, the timeout signal wins. The only permitted claim is a `direct` report of the record's own timeout signal (`evidence.exit_code == 124` or `evidence.error_type`). Result prose is never keyword-scanned.
 
 **Recovery:** Treat the record as timed out whatever its status label says. Retry with a larger budget or a narrower scope; otherwise report the timeout and leave the fact explicitly unverified.
 

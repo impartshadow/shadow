@@ -93,7 +93,7 @@ update after restart?"); that pattern was narrowed to the `half things` form.
 
 - `core/request_binding.py` — the completion-evidence half of the same
   mechanism: evidence may only close the request it traces to.
-- `harness/contracts/persistent_correction.md`, `direct_ask_dismissal` —
+- `state/mandate.md` —
   adjacent FM-011 surfaces.
 
 ## Tests
