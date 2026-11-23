@@ -1123,14 +1123,7 @@ one: the origin draft.
 
 **Pattern:** A tool call times out, and the next move is the same call again — same tool, byte-identical params, same budget. The retry runs the same work against the same deadline and times out again. Two or three rounds later the turn ends with no authoritative result, and the response is left either claiming from pre-probe state (FM-014) or disclosing a timeout that was never actually escalated against (FM-034).
 
-**Enforcement:** `TimeoutRetryBudgetGate` (`timeout-retry-budget-gate`, `check_pre`, severity `block`). A pending call is a violation only when `(tool, canonicalized params)` is byte-identical to an earlier `tool_call_results` entry that timed out and was never superseded by a later success with the same key. Timeout classification is delegated to `core/contracts/timeouts.py` shared timeout helpers, so structured fields (`result_status == "timeout"`, `exit_code == 124`, timeout `error_type`) are the only signal — result prose is never scanned.
-
-**Escape hatch is structural, not phrasal:** any change to the call — a raised `timeout`, a narrower path, a smaller page size, a split into steps — produces a different key and passes. There is no wording that bypasses the gate and no wording that trips it.
-
-**Relationship to the timeout triad:**
-- FM-014 / `timeout-claim-entailment-gate` — do not *claim* from a timed-out probe.
-- FM-034 / `timeout-disclosure-gate` — do not *hide* a timed-out probe.
-- FM-045 / `timeout-retry-budget-gate` — do not *repeat* a timed-out probe unchanged. Enforces the remedy the other two gates prescribe in their `recovery` text.
+**Enforcement status:** The retry-budget gate was retired because production preflight never supplied previous tool outcomes. Provider request and subprocess deadlines still apply.
 
 **Recovery:** Raise the budget, narrow the scope, or split the call. If no cheaper form exists, stop retrying and state that the operation timed out and which fact is therefore unverified.
 
@@ -1153,16 +1146,7 @@ one: the origin draft.
 
 **Pattern:** A call times out and is re-issued in a form that *looks* changed but costs the same — the command re-wrapped or re-spaced, a flag reordered, a `timeout` dropped or lowered rather than raised. FM-045's byte-identical key check sees two different calls and passes, so the loop it exists to break continues one edit-shaped retry at a time, ending in the same state: no authoritative result, and a response left either claiming from pre-probe state (FM-014) or disclosing a timeout that was never escalated against (FM-034).
 
-**Enforcement:** `TimeoutRetryEscalationGate` (`timeout-retry-escalation-gate`, `check_pre`, severity `block`). Pending and prior calls are reduced to a *work key* — `(tool, params)` with whitespace collapsed in every string and all budget keys (`timeout`, `timeout_ms`, `deadline`, `max_wait`, …) stripped. A pending call is a violation only when its work key matches an unresolved timed-out entry in `tool_call_results` and the pending call does not name a strictly larger timeout budget than the one that already expired. Timeout and success classification is delegated to `core/contracts/timeouts.py` shared timeout helpers, so structured fields are the only signal and result prose is never scanned.
-
-**Escape hatch is structural, not phrasal:** a narrowed scope changes a non-budget param, which changes the work key, which means no match and no check — the gate can only fire on a call whose substantive params are unchanged. A raised budget passes explicitly. As with FM-045, no wording bypasses the gate and no wording trips it.
-
-**Relationship to the timeout family:**
-- FM-014 / `timeout-claim-entailment-gate` — do not *claim* from a timed-out probe.
-- FM-034 / `timeout-disclosure-gate` — do not *hide* a timed-out probe.
-- FM-034.b / `timeout-negative-inference-gate` — do not *conclude* from a timed-out probe.
-- FM-045 / `timeout-retry-budget-gate` — do not *repeat* a timed-out probe unchanged.
-- FM-045.b / `timeout-retry-escalation-gate` — do not *re-dress* a timed-out probe and call it a retry.
+**Enforcement status:** The escalation gate was retired for the same dispatch gap as FM-045. Reformatting a command is insufficient evidence that its scope or deadline changed.
 
 **Recovery:** Raise the budget above the one that expired, or narrow the substantive scope so the canonical call actually changes. If neither is available, stop retrying and state that the operation timed out and which fact is therefore unverified.
 
@@ -1194,7 +1178,7 @@ one: the origin draft.
 
 **Status:** NOT ENFORCED — gate generated 2026-09-27 but refused by the tripped self-commit ratchet; quarantined at `artifacts/ratchet_quarantine/2026-09-27_TimeoutEvidenceClassificationGate.patch` pending the user's review.
 
-**Proposed enforcement:** `timeout-evidence-classification-gate` (block) would apply the FM-014.e entailment rule using the family's shared classifier (`core.contracts.timeouts._is_timeout`). It fires only on records where `result_status != "timeout"`, so it never double-reports with FM-014.e. When structured fields conflict, the timeout signal wins. The only permitted claim is a `direct` report of the record's own timeout signal (`evidence.exit_code == 124` or `evidence.error_type`). Result prose is never keyword-scanned.
+**Proposed enforcement:** `timeout-evidence-classification-gate` (block) would apply the FM-014.e entailment rule using structured timeout signals. It fires only on records where `result_status != "timeout"`, so it never double-reports with FM-014.e. When structured fields conflict, the timeout signal wins. The only permitted claim is a `direct` report of the record's own timeout signal (`evidence.exit_code == 124` or `evidence.error_type`). Result prose is never keyword-scanned.
 
 **Recovery:** Treat the record as timed out whatever its status label says. Retry with a larger budget or a narrower scope; otherwise report the timeout and leave the fact explicitly unverified.
 

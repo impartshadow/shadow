@@ -1,7 +1,7 @@
 # Contract: credential-intake-routing
 
 ## Type
-Post-response gate — deterministic enforcement via `core/contracts/code_ops.py:CredentialIntakeRoutingGuard`
+Prompt-level guidance.
 
 ## Failure mode
 FM-013 (clarification quality — routing delegated back to the user)
@@ -34,7 +34,8 @@ The ask is allowed when the same response carries action evidence:
 - explicit failed-inference disclosure ("checked recent context, no candidate")
 
 ## Enforcement
-Severity: **block**.
+**Not code-enforced.** **Status correction (2026-11-20):** `CredentialIntakeRoutingGuard` was removed in the November 14 response-check audit (`docs/response-check-audit-20261114.md`) because its lexical matching did not establish the condition. No replacement gate exists.
+The trigger and exemption sections describe the retired gate; nothing blocks a reply today.
 
 ## Violation recovery
 1. Infer the target service from the last ~10 messages of channel context.

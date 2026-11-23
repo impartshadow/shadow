@@ -1,6 +1,6 @@
 # attribute-correction-verification-guard
 
-**Type:** Post-check (code-enforced)
+**Type:** Prompt-level guidance (not code-enforced)
 **Failure mode:** FM-027 (fabricated completion / verification skip)
 **Trigger:** Every response
 
@@ -19,8 +19,8 @@ artifact in existing sources (thread history, prior attachments,
 back empty, and say so explicitly: "I checked the thread and didn't find it,
 can you resend?"
 
-**Enforcement:** `core/contracts/conversation.py:AttributeCorrectionVerificationGuard.check_post()`.
-Correction cues: "actually X, not Y" / "we learned" / "turns out" / "the X are
+**Enforcement:** **Not code-enforced.** **Status correction (2026-11-20):** `AttributeCorrectionVerificationGuard` was removed in the November 14 response-check audit (`docs/response-check-audit-20261114.md`) because its lexical matching did not establish the condition. No replacement gate exists.
+The retired gate matched these cues. Correction cues: "actually X, not Y" / "we learned" / "turns out" / "the X are
 Y, not Z" *combined with* a redo verb ("redo", "rerun", "update", "again",
 "fix"). Completion phrasing: "Updated today's…" / "Here's the updated…" /
 "Redone:" / "Revised outfit". Verification citation must name a source noun
@@ -55,5 +55,4 @@ evidence, and defaulting to user-asks instead of retrieval.
   "I checked the thread and prior attachments and didn't find a photo of the
   pants — can you resend?"
 
-**Escalation:** None. Block synchronously; the model retries with the
-verification step or the search-first citation in place.
+**Escalation:** None. Nothing blocks a reply that skips these steps.

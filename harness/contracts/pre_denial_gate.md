@@ -20,7 +20,6 @@ ownership of the original task. Do not expose credentials or verification codes.
 
 Evidence may be in tool results or existing verified receipts; it need not be
 pasted into the reply. Neither particular wording nor a generic tool call proves
-that a capability exists or an attempt failed. Actual-target checks remain in
-`core/contracts/conversation.py:ScopeDenialGuard` and
-`core/contracts/code_ops.py:BitwardenPreDenialGuard`; this guidance adds no
-reply-format gate.
+that a capability exists or an attempt failed.
+
+**Not code-enforced.** **Status correction (2026-11-20):** `ScopeDenialGuard` and the Bitwarden pre-denial guard were removed in the November 14 response-check audit (`docs/response-check-audit-20261114.md`) because its lexical matching did not establish the condition. No replacement gate exists.

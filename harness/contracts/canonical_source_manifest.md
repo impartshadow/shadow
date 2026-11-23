@@ -10,8 +10,8 @@ the known-wrong sources that have been mistaken for it, and the ONE module
 allowed to produce it. A fact value cannot leave its producer without proving it
 read the authoritative source.
 
-This is the production-site mirror of `CanonicalSourceGuard`, which checks the
-*response text*. The manifest catches the wrong-source read where the value is
+It began as the production-site mirror of the response-text CanonicalSourceGuard,
+which was retired in `2b1ef4db`; the producer-side check below is what still runs. The manifest catches the wrong-source read where the value is
 *produced*, before it ever flows downstream as asserted truth.
 
 ## The two layers
@@ -40,6 +40,7 @@ This is the production-site mirror of `CanonicalSourceGuard`, which checks the
 4. Add a test in `tests/test_contracts.py` (accept authoritative, reject wrong source, reject non-owner).
 
 ## Enforcement
+Code-enforced in `core/canonical_sources.py` at the producer (e.g. `scripts/stripe_check.py`):
 - `cite()` raises `WrongSourceError` on a known-wrong source or one carrying no verify_signal; `CanonicalSourceError` on an unregistered fact.
 - `@must_cite_source` raises `UncitedFactError` if the producer returns a bare value, `CanonicalSourceError` if a non-owner module produces the fact.
 
@@ -52,6 +53,6 @@ decorator to make the value pass — that re-opens the wrong-source class.
 The "Zelle is the rent" and 282h-tweet misses: a read DID happen, but of the
 wrong source, asserted as truth. No recency stamp or assert-from-memory guard
 catches that — only knowing which source is authoritative does. Built out from
-`CanonicalSourceGuard` (response-text) into a production-site gate so wrong-source
+the (since-retired) response-text CanonicalSourceGuard into a production-site gate so wrong-source
 reads raise where produced, not downstream. Audit thread across
 #moonshot/#echo/#shadow-hq, 2026-05-30.
